@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Top-level package for Data Dependent Filter FDK algorithm."""
+"""Top-level package for Data Dependent Filters for FDK."""
 
 __author__ = """Rien Lagerwerf"""
 __email__ = 'm.j.lagerwerf@cwi.nl'
@@ -17,4 +17,11 @@ def __get_version():
 __version__ = __get_version()
 
 # Import all definitions from main module.
-from .ddf_fdk import *
+from .CCB_CT_class import CCB_CT
+from .phantom_class import phantom
+from .real_data_class import real_data
+
+# Import the support functions, maybe take a subset
+from .image_measures import *
+from .support_functions import *
+

@@ -4,6 +4,9 @@
 """The setup script."""
 
 from setuptools import setup, find_packages
+from Cython.Build import cythonize
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
 import os.path
 
 with open('README.md') as readme_file:
@@ -16,10 +19,17 @@ with open(os.path.join('ddf_fdk','VERSION')) as version_file:
     version = version_file.read().strip()
 
 requirements = [
+	'astra-toolbox',
+	'odl',
+	'Cython',
+	'pyfftw',
+	'scikit-image',
+	'tabulate',
+	'matplotlib',
+	'porespy'
     # Add your project's requirements here, e.g.,
-    # 'astra-toolbox',
-    # 'sacred>=0.7.2',
     # 'tables==3.4.4',
+
 ]
 
 setup_requirements = [ ]
@@ -46,6 +56,16 @@ dev_requirements = [
     
     ]
 
+ext_modules=[
+    Extension("ddf_fdk.phantom_objects",
+              sources=["ddf_fdk/phantom_objects.pyx"],
+              libraries=["m"],
+              extra_compile_args = ["-O3", "-ffast-math", "-march=native",
+                                    "-fopenmp" ],
+              extra_link_args=['-fopenmp']
+              )]
+
+
 setup(
     author="Rien Lagerwerf",
     author_email='m.j.lagerwerf@cwi.nl',
@@ -58,7 +78,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description="Supporting code for the data dependent filter FDK paper",
+    description="Supporting code for the ['Improving FDK reconstruction by Data-Dependent Filtering'] paper",
     install_requires=requirements,
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
@@ -73,4 +93,5 @@ setup(
     url='https://github.com/mjlagerwerf/ddf_fdk',
     version=version,
     zip_safe=False,
-)
+    cmdclass = {"build_ext": build_ext},
+    ext_modules = cythonize(ext_modules, force=True)

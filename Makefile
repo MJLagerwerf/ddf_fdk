@@ -85,8 +85,11 @@ install: clean ## install the package to the active Python's site-packages
 
 install_dev:
 	# https://stackoverflow.com/a/28842733
+	conda install -c astra-toolbox/label/dev astra-toolbox -y
+	pip install git+https://github.com/odlgroup/odl.git@0a2dac2a68be3a06e72b4559f9026c206ccad46e#egg=odl
+	conda install Cython -y
 	pip install -e .[dev]
 
 conda_package:
 	conda install conda-build -y
-	conda build conda/
+	conda build conda/ -c astra-toolbox/label/dev
