@@ -70,8 +70,9 @@ class phantom:
             self.generate_data(voxels_up, reco_space_up, f_up, **kwargs)
             reco_space_up, f_up = None, None
             gc.collect()
-            self.reco_space, self.f = self.phantom_creation(voxels, **kwargs,
-                                                            second=True)
+            self.reco_space, self.f = self.phantom_creation(voxels, 
+                                                            second=True,
+                                                            **kwargs)
                 
     def make_mask(self, WV_path):
         self.WV_path = WV_path
@@ -347,6 +348,14 @@ class phantom:
             
 
         elif self.PH == '22 Ellipses':
+            if 'load_data_f' in kwargs:
+                f = reco_space.element(np.load(kwargs['load_data_f']))
+            else:
+                if 'second' in kwargs:
+                    seed_old = np.random.get_state()
+                    np.random.set_state(self.seed)
+                else:
+                    self.seed = np.random.get_state()
             self.volumesize = np.array([4, 4, 4], dtype='float32')
             # Scale the detector correctly
             self.detecsize = np.array([2 * self.volumesize[0],
@@ -380,10 +389,9 @@ class phantom:
             if 'load_data_f' in kwargs:
                 f = reco_space.element(np.load(kwargs['load_data_f']))
             else:
-                if kwargs['second']:
+                if 'second' in kwargs:
                     seed_old = np.random.get_state()
-                    np.random.seed(seed=self.seed)
-                    np.random.set_state(seed_old)
+                    np.random.set_state(self.seed)
                 else:
                     self.seed = np.random.get_state()
 
