@@ -5,7 +5,7 @@ Created on Wed Mar 28 11:40:55 2018
 
 @author: lagerwer
 """
-
+import odl
 import numpy as np
 import ddf_fdk as ddf
 #import real_data_class as RD
@@ -61,30 +61,5 @@ case.table()
 #case.TFDK.show()
 #case.TFDK.show_filt()
 # %% Check convolution
-pylab.close('all')
-import odl
-#x = case.spf_space.element(np.arange(case.spf_space.size))
-x = case.spf_space.element(np.arange(case.spf_space.size)[::-1])
-#x = case.spf_space.zero()
-#x[0] = 1
-#x[:4] = 1
-#x = case.spf_space.one()
-conv_x = case.conv_op(case.Exp_op(x))
-det_line = odl.uniform_discr(-data_obj.detecsize[0], data_obj.detecsize[0],
-                             int(2 * pix))
-res_det = odl.ResizingOperator(case.filter_space, range=det_line)
-
-an = 44
-np_conv_x = res_det(np.convolve(case.Exp_op(x), case.g_scl[an, :, pix // 2],
-                                'same'))
-
-#print(np.linalg.norm(np_conv_x - np.asarray(conv_x[an, :, pix // 2])) / \
-#      np.size(np_conv_x)) 
-#((np_conv_x - np.asarray(conv_x[an, :, pix // 2]))).show()
-#np_conv_x.show()
-pylab.figure()
-pylab.plot(np.roll(np_conv_x, -1))
-pylab.plot(np.asarray(conv_x[an, :, pix // 2]))
-
 
 

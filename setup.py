@@ -20,16 +20,14 @@ with open(os.path.join('ddf_fdk','VERSION')) as version_file:
 
 requirements = [
 	'astra-toolbox',
+	'cython',
 	'odl',
-	'Cython',
 	'pyfftw',
 	'scikit-image',
 	'tabulate',
-	'matplotlib',
-	'porespy'
+	'matplotlib'
     # Add your project's requirements here, e.g.,
     # 'tables==3.4.4',
-
 ]
 
 setup_requirements = [ ]
@@ -95,3 +93,6 @@ setup(
     zip_safe=False,
     cmdclass = {"build_ext": build_ext},
     ext_modules = cythonize(ext_modules, force=True)
+)
+
+

@@ -12,9 +12,17 @@ from scipy.ndimage import uniform_filter
 import gc
 from skimage.filters import threshold_otsu
 import scipy.ndimage.morphology as sp
-from porespy import metrics
+import scipy as sps
+
 
 # %%
+def porosity(im):
+    im = sp.array(im, dtype=int)
+    Vp = sp.sum(im == 1)
+    Vs = sp.sum(im == 0)
+    e = Vp/(Vs + Vp)
+    return e
+
 def comp_segment(X):
     threshold = threshold_otsu(np.asarray(X))
     return X > threshold
@@ -30,7 +38,7 @@ def comp_outer_reg(X, vox):
 def comp_porosity(X, vox):
     fig = comp_outer_reg(X, vox)
     fig = np.invert(fig) * 2 + np.invert(np.asarray(X)) * 1
-    return metrics.porosity(fig)
+    return porosity(fig)
     
 # %%    
 # ! ! ! TODO: Add gaussian weights for SSIM

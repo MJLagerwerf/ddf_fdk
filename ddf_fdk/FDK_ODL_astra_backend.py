@@ -38,7 +38,7 @@ def FDK_astra(g, filt, geom, ang_freq=None):
 #    rec_id = astra.data3d.link('-vol', vol_geom, rec)
 
 
-    fullFilterSize = int(2 ** (np.ceil(np.log2(2 * u)) + 1))
+    fullFilterSize = int(2 ** (np.ceil(np.log2(2 * u))))
     halfFilterSize = fullFilterSize // 2 + 1
     # %% Make the matrix columns of the matrix B
     filter2d = np.zeros((ang, halfFilterSize))
