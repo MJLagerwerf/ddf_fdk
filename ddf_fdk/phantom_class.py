@@ -76,7 +76,8 @@ class phantom:
                 
     def make_mask(self, WV_path):
         self.WV_path = WV_path
-        if self.PH in ['Threeshape', 'Fourshape', '22 Ellipses']:
+        if self.PH in ['Threeshape', 'Fourshape', '22 Ellipses',
+                       'Fourshape_test']:
             mask = np.ones(self.voxels, dtype='bool')
             clip_cylinder(self.voxels[0], mask)
             np.save(WV_path + '/mask.npy', mask)
@@ -91,6 +92,7 @@ class phantom:
     def mask(self, x):
         mask = np.load(self.WV_path + '/mask.npy')
         return self.reco_space.element(mask * x)
+
     
     # %% Add noise function
     def add_poisson_noise(self, I_0, seed=None):
@@ -103,6 +105,8 @@ class phantom:
         Iclean = None
         np.random.set_state(seed_old)
         return  (-np.log(Inoise / I_0))
+    
+
 # %% Generate data and 
     def generate_data(self, voxels_up, reco_space_up, f_up, **kwargs):
         dpix_up = [voxels_up[0], voxels_up[1]]
@@ -127,9 +131,8 @@ class phantom:
                             det_radius=det_radius, axis=[0, 0, 1])
 
         FP = odl.tomo.RayTransform(reco_space_up, geometry)
-        
-        resamp = odl.Resampling(data_space_up, data_space)
 
+        resamp = odl.Resampling(data_space_up, data_space)
         if 'load_data_g' in kwargs:
             if type(kwargs['load_data_g']) == str: 
                 self.g = data_space.element(np.load(kwargs['load_data_g']))
@@ -137,6 +140,7 @@ class phantom:
                 self.g = data_space.element(kwargs['load_data_g'])
         else:
             self.g = resamp(FP(f_up))
+
             if self.noise == None:
                 pass
             elif self.noise[0] == 'Gaussian':
@@ -150,7 +154,6 @@ class phantom:
             else:
                 raise ValueError('unknown `noise type` ({})'
                              ''.format(self.noise[0]))
-        
 
     def phantom_creation(self, voxels, **kwargs):
         if self.PH == "Shepp-Logan":
@@ -458,6 +461,99 @@ class phantom:
                     np.random.set_state(seed_old)
             return reco_space, f
         
+        
+        elif self.PH == 'Fourshape_test':
+            self.volumesize = np.array([4, 4, 4], dtype='float32')
+            # Scale the detector correctly
+            self.detecsize = np.array([2 * self.volumesize[0],
+                                       self.volumesize[1]])
+            # Make the reconstruction space
+            reco_space = odl.uniform_discr(min_pt=-self.volumesize,
+                                           max_pt=self.volumesize,
+                                            shape=voxels, dtype='float32')
+            pix = voxels[0]
+            img = np.zeros((pix, pix, pix))
+            img += po.addGaussianBlob_det(pix, x_c=0.4, y_c=0.6, z_c=0.44,
+                                          a=.8, theta=0.44*np.pi,
+                                          phi=0.05 * np.pi,
+                                          x_s=.05, y_s=.15, z_s=.2)
+            img += po.addGaussianBlob_det(pix, x_c=0.43, y_c=0.44, z_c=0.67,
+                                          a=.55, theta=0.1*np.pi,
+                                          phi=0.4 * np.pi, x_s=.1,
+                                          y_s=.09, z_s=.0912)
+            img += po.addGaussianBlob_det(pix, x_c=0.71, y_c=0.72, z_c=0.44,
+                                          a=.13, theta=0.16*np.pi,
+                                          phi=0.034 * np.pi,
+                                          x_s=.084, y_s=.14, z_s=.078)
+            
+            img += po.addSiemensStar_det(pix, x_c=.5, y_c=.44, z_c=.5, a=.36,
+                                         r2=.15, h2=.07, theta=0, phi=0)
+            img += po.addSiemensStar_det(pix, x_c=.62, y_c=.49, z_c=.26, a=.24,
+                                         r2=.12, h2=.125, theta=0,
+                                         phi=0.55 * np.pi)
+            img += po.addSiemensStar_det(pix, x_c=0.3, y_c=.33, z_c=.505,
+                                         a=.34, r2=.075, h2=.1, 
+                                         theta=0.44* np.pi, phi=0 * np.pi)
+            
+            
+            img += po.addRectangle_det(pix, x_c=0.32, y_c=.70, z_c=.5, a=.2,
+                                       w2=.3, h2=.05, d2=0.13,
+                                       theta=0.25 * np.pi, phi=0)
+            
+            img += po.addRectangle_det(pix, x_c=0.5, y_c=.66, z_c=.32, a=.15,
+                                       w2=.2, h2=.25, d2=0.06,
+                                       theta=0.25 * np.pi, phi=0.6 * np.pi)
+            
+            img += po.addRectangle_det(pix, x_c=0.6, y_c=.5, z_c=.58, a=.19,
+                                       w2=.8, h2=.02, d2=0.16,
+                                       theta=0.55 * np.pi, phi=1.3 * np.pi)
+            test_reco_space = odl.uniform_discr([0, 0, 0], [pix, pix, pix],
+                                           [pix, pix, pix])
+            a=.28
+            x_s, y_s, z_s = .3, .4, .1
+            x_c, y_c, z_c = 0.2, -0.5, 0
+            rot1, rot2, rot3 = 0, 1.3, 0.25 * np.pi
+            ellip = [[a, x_s, y_s, z_s, x_c, y_c, z_c, rot1, rot2, rot3]]
+            phantom = odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
+                                                    min_pt=[.2 * pix, .2 * pix,
+                                                            .2 * pix],
+                                                    max_pt=[.8 * pix, .8 * pix,
+                                                            .8 * pix])
+            a=.18
+            x_s, y_s, z_s=.2, .1, .35
+            x_c, y_c, z_c=-.25, 0, .75
+            rot1, rot2, rot3 = 0, 1.3, 0.25 * np.pi
+            ellip = [[a, x_s, y_s, z_s, x_c, y_c, z_c, rot1, rot2, rot3]]
+            phantom1 = odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
+                                                    min_pt=[.2 * pix, .2 * pix,
+                                                            .2 * pix],
+                                                    max_pt=[.8 * pix, .8 * pix,
+                                                            .8 * pix])
+            
+            a=.23
+            x_s, y_s, z_s=.6, .05, .2
+            x_c, y_c, z_c=0, -.75, .6
+            rot1, rot2, rot3 = 0, 1.3, 0.25 * np.pi
+            ellip = [[a, x_s, y_s, z_s, x_c, y_c, z_c, rot1, rot2, rot3]]
+            phantom2 = odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
+                                                    min_pt=[.2 * pix, .2 * pix,
+                                                            .2 * pix],
+                                                    max_pt=[.8 * pix, .8 * pix,
+                                                            .8 * pix])
+            
+            
+            img += phantom
+            img += phantom1
+            img += phantom2
+            
+            clip_cylinder(voxels[0], (img))
+            # Normalize phantom
+
+            f = (img / np.max(img) * .22)
+            
+            return reco_space, f
+    
+    
         elif self.PH == 'FORBILD':
             self.volumesize = np.array([15, 15, 15], dtype='float32')
             self.detecsize = np.array([2 * self.volumesize[0],
@@ -540,11 +636,11 @@ class phantom:
                     SE3 += [[-1.8, rad, rad, rad, x_ear1[k], -sha, -sha,
                              0, 0, 0]]
                     
-                    SE4 += [[-1.8, rad, rad, rad, x_ear1[k], 2 * sha,
-                             0, 0, 0, 0]]
+                    SE4 += [[-1.8, rad, rad, rad, x_ear1[k], 2 * sha, 0,
+                             0, 0, 0]]
                     
-                    SE5 += [[-1.8, rad, rad, rad, x_ear1[k], 2 * -sha,
-                             0, 0, 0, 0]]
+                    SE5 += [[-1.8, rad, rad, rad, x_ear1[k], 2 * -sha, 0,
+                             0, 0, 0]]
                 if k < 7:
                     SE2 += [[-1.8, rad, rad, rad, x_ear2[k], sha, 2 * sha,
                              0, 0, 0]]
@@ -634,13 +730,15 @@ class phantom:
                     SE7 += [[-1.8, rad, rad, rad, x_ear1[k], 3 * -sha, 3 * -sha,
                              0, 0, 0]]
                     
-            ph += odl.phantom.ellipsoid_phantom(reco_space, [*SE1, *SE2, *SE3, *SE4, *SE5,
+            ph += odl.phantom.ellipsoid_phantom(reco_space, [*SE1, *SE2, *SE3,
+                                                             *SE4, *SE5,
                                                              *SE6, *SE7])
             # %% Make some bones with a for loop
             ph += po.addBonesFORBILD(voxels[0], volsize)
                         
             ph[np.asarray(ph) > 1.8] = 1.8
-            return reco_space, ph * 0.1 
+            ph[np.asarray(ph) < 0] = 0
+            return reco_space, (ph * 0.1)
         elif self.PH == 'Low contrast':
             self.volumesize = np.array([12, 12, 12], dtype='float32')
             self.detecsize = np.array([2 * self.volumesize[0],

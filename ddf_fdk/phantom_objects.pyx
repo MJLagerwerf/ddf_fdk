@@ -326,3 +326,109 @@ def addDelta(int size, double a, double sigma):
 
     return img
 
+@cython.cdivision(True)
+@cython.boundscheck(False)  # Deactivate bounds checking
+@cython.wraparound(False)   # Deactivate negative indexing.
+def addGaussianBlob_det(int size, double x_c, double y_c, double z_c, double a,
+                    double theta, double phi, double x_s, double y_s,
+                    double z_s):
+    cdef int i, j, k
+    cdef double st, ct, sf, cf
+    cdef double x, y, z
+    x_c *= size
+    y_c *= size
+    z_c *= size
+    x_s *= size
+    y_s *= size
+    z_s *= size
+    st = np.sin(theta)
+    ct = np.cos(theta)
+    sf = np.sin(phi)
+    cf = np.cos(phi)
+    img = np.zeros((size, size, size))
+    cdef double [:, :, :] c_img = img
+    for i in prange(size, nogil=True):
+        for j in prange(size):
+            for k in prange(size):
+                x = x_c + (i - x_c) * ct - (j - y_c) * st
+                y = y_c + (i - x_c) * cf * st + (j - y_c) * cf * ct - \
+                            (k - z_c) * sf
+                z = z_c + (i - x_c) * sf * st + (j - y_c) * sf * ct - \
+                            (k - z_c) * cf
+                c_img[i, j, k] += a * exp(-1/2*(pow(x - x_c, 2) / pow(x_s, 2) \
+                                         + pow(y - y_c, 2) / pow(y_s, 2) + \
+                                         pow(z - z_c, 2) / pow(z_s, 2)))
+
+    return img
+
+
+@cython.boundscheck(False)  # Deactivate bounds checking
+@cython.wraparound(False)   # Deactivate negative indexing.
+def addRectangle_det(int size, double x_c, double y_c, double z_c, double a,
+                 double w2, double h2, double d2, double theta, double phi):
+    cdef int i, j, k
+    cdef double ct, st, cf, sf
+    cdef double x, y, z
+    x_c *= size
+    y_c *= size
+    z_c *= size
+    w2 *= size / 2
+    h2 *= size / 2
+    d2 *= size / 2
+    ct = np.cos(theta)
+    st = np.sin(theta)
+    cf = np.cos(phi)
+    sf = np.sin(phi)
+    img = np.zeros((size, size, size))
+    cdef double [:, :, :] c_img = img
+
+    for i in prange(size, nogil=True):
+        for j in prange(size):
+            for k in prange(size):
+                x = (i - x_c) * ct - (j - y_c) * st
+                y = (i - x_c) * cf * st + (j - y_c) * cf * ct - \
+                            (k - z_c) * sf
+                z = (i - x_c) * sf * st + (j - y_c) * sf * ct + \
+                            (k - z_c) * cf
+                if (x >= -w2) and (x <= w2) and \
+                    (y >= -h2) and (y <= h2) and \
+                    (z >= -d2) and (z <= d2):
+                    c_img[i, j, k] += a
+    return img
+
+@cython.cdivision(True)
+@cython.boundscheck(False)  # Deactivate bounds checking
+@cython.wraparound(False)   # Deactivate negative indexing.
+def addSiemensStar_det(int size, double x_c, double y_c, double z_c, double a,
+                   double r2, double h2, double theta, double phi):
+    cdef int i, j, k
+    cdef double SpokeRange, cf, sf, dx
+    cdef double z, dy, r_pos, t_pos, r_rel
+    x_c *= size
+    y_c *= size
+    z_c *= size
+    r2 = (r2 * size) ** 2
+    h2 *= size / 2
+    SpokeRange = 2 * np.pi / 16
+    cf = np.cos(phi)
+    sf = np.sin(phi)
+
+    img = np.zeros((size, size, size))
+    cdef double [:, :, :] c_img = img
+    for i in prange(size, nogil=True):
+        for j in prange(size):
+            for k in prange(size):
+                dx = i - x_c
+                dy = (j - y_c) * cf - (k - z_c) * sf
+                z = (j - y_c) * sf + (k - z_c) * cf
+                r_pos = dx ** 2 + dy ** 2
+                t_pos = atan(dy / dx) - theta
+                r_rel = r_pos / r2 + 0.2 * a
+                while t_pos < 0:
+                    t_pos = t_pos + M_PI
+                if ((t_pos // SpokeRange % 2) == 0) and r_pos <= r2 and \
+                        (z >= -h2 * r_rel) and (z <= h2 * r_rel):
+                    c_img[i, j, k] += a
+    return img
+
+

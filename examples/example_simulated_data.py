@@ -21,7 +21,7 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'FORBILD'
+phantom = 'Fourshape_test'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -48,18 +48,20 @@ bin_param = 2
 # %% Create the circular cone beam CT class
 case = ddf.CCB_CT(data_obj)#,
 ##                  load_data=g_load_path)
-## Initialize the algorithms (FDK, SIRT)
+# Initialize the algorithms (FDK, SIRT)
 case.init_algo()
 case.init_DDF_FDK()
 # %%
+case.show_phantom()
+case.g.show()
 case.FDK.do('Ram-Lak', backend='ODL')#, compute_results='no')
 case.TFDK.do(lam=0.002)#, compute_results='no')
 #case.SFDK.do(lam=0.004)#
 # %% 
 case.table()
-#case.FDK.show()
-#case.TFDK.show()
-#case.TFDK.show_filt()
+case.FDK.show()
+case.TFDK.show()
+case.TFDK.show_filt()
 # %% Check convolution
 
 
