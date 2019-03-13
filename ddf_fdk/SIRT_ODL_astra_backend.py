@@ -11,7 +11,7 @@ import astra
 import numpy as np
 import time
 # %%
-def SIRT_astra(g, niter, geom, WV_path, ang_freq=None):
+def SIRT_astra(g, niter, geom, WV_path, non_neg=False, ang_freq=None):
     # %%
     ang, u, v = g.shape
     minvox = geom.detector.partition.min_pt[1]
@@ -42,6 +42,10 @@ def SIRT_astra(g, niter, geom, WV_path, ang_freq=None):
     cfg['ProjectionDataId'] = proj_id
     cfg['ProjectorId'] = projector_id
 
+    if non_neg:
+        cfg['option']={}
+        cfg['option']['MinConstraint'] = 0
+    
     # Create the algorithm object from the configuration structure
     alg_id = astra.algorithm.create(cfg)
     if type(niter) == list:

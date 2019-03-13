@@ -222,13 +222,19 @@ class FDK_class(algorithm_class):
 
 # %%
 class SIRT_class(algorithm_class):
-    def __init__(self, CT_obj):
+    def __init__(self, CT_obj, non_neg=False):
         self.CT_obj = CT_obj
-        self.method = 'SIRT'
+        if non_neg:    
+            self.method = 'SIRT+'
+        else:
+            self.method = 'SIRT'
+        self.non_neg = non_neg
 
     def do(self, niter, compute_results='yes', measures=['MSR', 'MAE', 'SSIM']):
-        rec, t_rec = SIRT_meth.SIRT_astra(self.CT_obj.g, niter, self.CT_obj.geometry,
-                                   self.CT_obj.WV_path)
+        rec, t_rec = SIRT_meth.SIRT_astra(self.CT_obj.g, niter,
+                                          self.CT_obj.geometry,
+                                          self.CT_obj.WV_path,
+                                          self.non_neg)
         if type(niter) == list:
             for i in range(np.size(niter)):
                 rec_arr = self.CT_obj.reco_space.element(np.load(

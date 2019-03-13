@@ -124,6 +124,9 @@ class CCB_CT:
 
         self.SIRT = algo.SIRT_class(self)
         self.rec_methods += [self.SIRT]
+        
+        self.SIRT_NN = algo.SIRT_class(self, non_neg=True)
+        self.rec_methods += [self.SIRT_NN]
 
     def init_DDF_FDK(self, bin_param=2, expansion_op='linear'):
         self.spf_space, self.Exp_op = sup.ExpOp_builder(bin_param,

@@ -52,15 +52,16 @@ case = ddf.CCB_CT(data_obj)#,
 case.init_algo()
 case.init_DDF_FDK()
 # %%
-
-case.FDK.do('Ram-Lak', backend='ODL')#, compute_results='no')
-case.TFDK.do(lam=0.002)#, compute_results='no')
+case.SIRT.do(5)
+case.SIRT_NN.do(5)
+#case.FDK.do('Ram-Lak', backend='ODL')#, compute_results='no')
+#case.TFDK.do(lam=0.002)#, compute_results='no')
 #case.SFDK.do(lam=0.004)#
 # %% 
 case.table()
-case.FDK.show()
-case.TFDK.show()
-case.TFDK.show_filt()
+#case.FDK.show()
+#case.TFDK.show()
+#case.TFDK.show_filt()
 # %% Check convolution
 
 
