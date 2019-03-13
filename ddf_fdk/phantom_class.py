@@ -146,7 +146,7 @@ class phantom:
                 pass
             elif self.noise[0] == 'Gaussian':
                 self.g += data_space.element(
-                        odl.phantom.white_noise(FP.range) * \
+                        odl.phantom.white_noise(resamp.range) * \
                         np.mean(self.g) * self.noise[1])
             elif self.noise[0] == 'Poisson':
                 # 2**8 seems to be the minimal accepted I_0
