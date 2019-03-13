@@ -38,13 +38,14 @@ def clip_circle(size, img):
     img[outCircle] = 0
 
 def clip_cylinder(size, img):
-    xx, yy, zz = np.mgrid[:size, :size, :size]
+    xx, yy = np.mgrid[:size, :size]
     mid = (size - 1) / 2
     circle = (xx - mid) ** 2 + (yy - mid) ** 2
+    xx, yy = None, None
     bnd = size ** 2 / 4
     outCircle = circle > bnd
-    img[zz < size // 8] = 0
-    img[zz > 7 * size // 8] = 0
+    img[:, :, :size // 8] = 0
+    img[:, :, 7 * size // 8:] = 0
     img[outCircle] = 0
 # %%
         
