@@ -29,7 +29,7 @@ def comp_segment(X):
 
 def comp_rSegErr(S, S_GT):
     err = np.linalg.norm(np.ravel(S) * 1 - np.ravel(S_GT) * 1, 1) / np.size(S)
-    return 1 - err
+    return err
 
 def comp_outer_reg(X, vox):
     out_reg = sp.binary_dilation(np.asarray(X), iterations=vox // 16)

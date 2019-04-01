@@ -340,16 +340,17 @@ class phantom:
             
             spheres = []
             # Add outer sphere
-            spheres += [make_spheres([0, 0, 0], .5, 1)]
-            
+            spheres += [make_spheres([0, 0, 0], .8, 1)]
+            # scale to phantom with diameter 80% of hte total size
+            sc = 0.8 / 0.5
             # Add smaller spheres
             for i in range(len(ball_radius)):
-                spheres += [make_spheres(ball_pos[i, :], ball_radius[i])]
+                spheres += [make_spheres(ball_pos[i, :] * sc,
+                                         ball_radius[i] * sc * 0.6)]
 
             # Create the foam phantom
             f = odl.phantom.ellipsoid_phantom(reco_space, spheres) * 0.24
             return reco_space, f
-            
 
         elif self.PH == '22 Ellipses':
             if 'load_data_f' in kwargs:
