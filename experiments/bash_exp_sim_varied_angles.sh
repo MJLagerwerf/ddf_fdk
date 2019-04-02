@@ -7,7 +7,7 @@
 
 for i in {0..19}
 do
-    python exp_sim_varied_angles_redo.py -p -F \
+    python exp_sim_varied_angles.py -p -F \
     AFFDK_results/sim_varied_angles with it_i=$i
 done
 
