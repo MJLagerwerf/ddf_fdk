@@ -74,7 +74,7 @@ def CT(pix, phantom, angles, src_rad, noise, Exp_bin, bin_param, f_load_path,
 
 # %%
 @ex.automain
-def main(specifics, lam_T, lam_S):
+def main(specifics):
     if not os.path.exists('AFFDK_results'):
         os.makedirs('AFFDK_results')
     t2 = time.time()
