@@ -11,6 +11,7 @@ import numpy as np
 import odl
 import tabulate
 import os
+import gc
 import shutil
 import pylab
 
@@ -212,6 +213,18 @@ class CCB_CT:
         return self.conv_op.rs_filt.inverse(np.fft.fftshift(np.fft.irfft(hf)))
 
 
+# %% Compute a Golden Standard reconstruction on low resolution
+    def compute_GS(self, factor=4):
+        g_LR = sup.integrate_data(self.g)
+        voxels_LR = np.asarray(self.phantom.voxels) // factor
+        DO = PH.phantom(voxels_LR, self.PH, self.angles, self.noise,
+                        self.src_rad, self.det_rad, load_data_g=g_LR)
+        CTo = CCB_CT(DO)
+        CTo.init_algo()
+        self.GS = CTo.SIRT_NN.do(niter=200, compute_results='no')
+        CTo, DO, g_LR = None, None, None
+        gc.collect()
+        
 # %% Quantify and show result
     def table(self, visualize='yes'):
         Ql = []

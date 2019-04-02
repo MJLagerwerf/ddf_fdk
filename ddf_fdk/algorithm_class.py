@@ -235,17 +235,29 @@ class SIRT_class(algorithm_class):
                                           self.CT_obj.geometry,
                                           self.CT_obj.WV_path,
                                           self.non_neg)
+        
         if type(niter) == list:
+            if compute_results != 'yes':
+                rec_list = []
             for i in range(np.size(niter)):
                 rec_arr = self.CT_obj.reco_space.element(np.load(
-                            self.CT_obj.WV_path + rec[i]))
-                self.comp_results(rec_arr, measures, niter[i],
-                                  'i=' + str(niter[i]), t_rec[i])
+                                self.CT_obj.WV_path + rec[i]))
+                
+                if compute_results == 'yes':
+                    self.comp_results(rec_arr, measures, niter[i],
+                                      'i=' + str(niter[i]), t_rec[i])
+                else:
+                    rec_list += [rec_arr]
+            if compute_results != 'yes':        
+                return rec_list
         else:
             rec_arr = self.CT_obj.reco_space.element(np.load(
                             self.CT_obj.WV_path + rec))
-            self.comp_results(rec_arr, measures, niter, 'i=' + str(niter),
+            if compute_results == 'yes':
+                self.comp_results(rec_arr, measures, niter, 'i=' + str(niter),
                               t_rec)
+            else:
+                return rec_arr
 
 
 # %%
@@ -310,11 +322,14 @@ class TFDK_class(AFFDK_class):
             return rec
         
 
-    def optim_param(self, voxels=[256, 256, 256]):
+    def optim_param(self, factor=4):
         # Create low resolution problem
-        DO = phantom(voxels, self.CT_obj.PH, self.CT_obj.angles,
+        self.CT_obj.compute_GS()
+        voxels_LR = np.asarray(self.CT_obj.phantom.voxels) // factor
+        g_LR = sup.subsamp_data(self.CT_obj.g)
+        DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
                               self.CT_obj.noise, self.CT_obj.src_rad,
-                              self.CT_obj.det_rad)
+                              self.CT_obj.det_rad, load_data_g=g_LR)
         expansion_op = 'linear'
         bin_param = 2
         # Initialize operators and algorithms
@@ -323,22 +338,29 @@ class TFDK_class(AFFDK_class):
         CTo.init_algo()
         # Initialize DDF-FDK algorithm    
         CTo.init_DDF_FDK(bin_param, expansion_op)
-        MS = ['MAE']
+
         # Do a rough search for the optim param:
         lamTr = np.array([10, 1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6])    
+
+        L1D = np.zeros((19))
+        tel = 0
         for i in range(len(lamTr)):
-            CTo.TFDK.do(lamTr[i], measures=MS)
-        lmin_T = lamTr[np.argmin(CTo.TFDK.results.Q[:, 1])]
+            rec = CTo.TFDK.do(lamTr[i], compute_results='no')
+            L1D[tel] = sup.L1_distance(rec, self.CT_obj.GS)
+            tel += 1
+        lmin_T = lamTr[np.argmin(L1D[:len(lamTr)])]
         # Do a fine search for the optim param:
         lamTf = np.array([10, 8, 6, 4, 2, 1, .8, .6, .4, .2, .1]) * lmin_T
         for i in range(len(lamTf)):
-            CTo.TFDK.do(lamTf[i], measures=MS)
+            rec = CTo.TFDK.do(lamTf[i], compute_results='no')
+            L1D[tel] = sup.L1_distance(rec, self.CT_obj.GS)
+            tel += 1
         
-        if np.argmin(CTo.TFDK.results.Q[:, 1]) <= 7:
-            self.optim_lam = lamTr[np.argmin(CTo.TFDK.results.Q[:, 1])]
+        if np.argmin(L1D) <= 7:
+            self.optim_lam = lamTr[np.argmin(L1D)]
         else:
-            self.optim_lam = lamTf[np.argmin(CTo.TFDK.results.Q[:, 1]) - 7]
-        DO, CTo = None, None
+            self.optim_lam = lamTf[np.argmin(L1D) - 7]
+        DO, CTo, g_LR = None, None, None
         gc.collect()
         return self.optim_lam
 
@@ -369,11 +391,14 @@ class SFDK_class(AFFDK_class):
         else:
             return rec
 
-    def optim_param(self, voxels=[256, 256, 256]):
+    def optim_param(self, factor=4):
         # Create low resolution problem
-        DO = phantom(voxels, self.CT_obj.PH, self.CT_obj.angles,
+        self.CT_obj.compute_GS()
+        voxels_LR = np.asarray(self.CT_obj.phantom.voxels) // factor
+        g_LR = sup.subsamp_data(self.CT_obj.g)
+        DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
                               self.CT_obj.noise, self.CT_obj.src_rad,
-                              self.CT_obj.det_rad)
+                              self.CT_obj.det_rad, load_data_g=g_LR)
         expansion_op = 'linear'
         bin_param = 2
         # Initialize operators and algorithms
@@ -382,22 +407,29 @@ class SFDK_class(AFFDK_class):
         CTo.init_algo()
         # Initialize DDF-FDK algorithm    
         CTo.init_DDF_FDK(bin_param, expansion_op)
-        MS = ['MAE']
+
         # Do a rough search for the optim param:
-        lamSr = np.array([10, 1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6])    
-        for i in range(len(lamSr)):
-            CTo.SFDK.do(lamSr[i], measures=MS)
-        lmin_S = lamSr[np.argmin(CTo.SFDK.results.Q[:, 1])]
+        lamTr = np.array([10, 1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6])    
+
+        L1D = np.zeros((19))
+        tel = 0
+        for i in range(len(lamTr)):
+            rec = CTo.SFDK.do(lamTr[i], compute_results='no')
+            L1D[tel] = sup.L1_distance(rec, self.CT_obj.GS)
+            tel += 1
+        lmin_T = lamTr[np.argmin(L1D[:len(lamTr)])]
         # Do a fine search for the optim param:
-        lamSf = np.array([10, 8, 6, 4, 2, 1, .8, .6, .4, .2, .1]) * lmin_S
-        for i in range(len(lamSf)):
-            CTo.SFDK.do(lamSf[i], measures=MS)
+        lamTf = np.array([10, 8, 6, 4, 2, 1, .8, .6, .4, .2, .1]) * lmin_T
+        for i in range(len(lamTf)):
+            rec = CTo.SFDK.do(lamTf[i], compute_results='no')
+            L1D[tel] = sup.L1_distance(rec, self.CT_obj.GS)
+            tel += 1
         
-        if np.argmin(CTo.SFDK.results.Q[:, 1]) <= 7:
-            self.optim_lam = lamSr[np.argmin(CTo.SFDK.results.Q[:, 1])]
+        if np.argmin(L1D) <= 7:
+            self.optim_lam = lamTr[np.argmin(L1D)]
         else:
-            self.optim_lam = lamSf[np.argmin(CTo.SFDK.results.Q[:, 1]) - 7]
-        DO, CTo = None, None
+            self.optim_lam = lamTf[np.argmin(L1D) - 7]
+        DO, CTo, g_LR = None, None, None
         gc.collect()
         return self.optim_lam
 # %%

@@ -310,3 +310,21 @@ def low_pass_filter(h, LP_filt):
         LP = make_bin_LP(LP_filt[1])
         h_LP = np.convolve(h, LP, mode='same')
     return h_LP
+
+
+# %% Functions to go to a lower resolution
+def integrate_data(g, factor=4):
+    tot = np.zeros(np.shape(g[:, ::factor, ::factor]))
+    for i1 in range(factor):
+        for i2 in range(factor):
+            tot += g[:, i1::factor, i2::factor]
+    tot /= factor ** 2
+    return tot
+
+def subsamp_data(g, factor=4):
+    return g[:, ::factor, ::factor]
+
+
+# %%
+def L1_distance(rec, ref):
+    return np.linalg.norm(np.ravel(rec) - np.ravel(ref), 1)
