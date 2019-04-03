@@ -7,7 +7,7 @@
 
 for i in {0..8}
 do
-    python exp_sim_var_cone_redo.py -p -F \
+    python exp_sim_var_cone.py -p -F \
     AFFDK_results/sim_varied_cone with it_i=$i
 done
 
