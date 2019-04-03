@@ -34,8 +34,6 @@ def cfg():
 
     angles = ang[it_j]
     noise = noises[it_j]
-    lam_T = lam_Ts[it_j][it_i] 
-    lam_S = lam_Ss[it_j][it_i] 
     # Source radius
     src_rad = src_rads[it_i]
 
