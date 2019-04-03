@@ -28,11 +28,7 @@ def cfg():
     angles = 360
     I0 = [2 ** 10,  2 ** 14]
     noise = ['Poisson', I0[it_i]]
-    lam_Ts = [6e-4, 2e-5]
-    lam_Ss = [2e-3, 8e-4]
 
-    lam_T = lam_Ts[it_i] 
-    lam_S = lam_Ss[it_i] 
     # Source radius
     src_rad = 10
 
@@ -78,7 +74,7 @@ def CT(pix, phantom, angles, src_rad, noise, Exp_bin, bin_param, f_load_path,
 
 # %%
 @ex.automain
-def main(specifics, lam_T, lam_S):
+def main(specifics):
     if not os.path.exists('AFFDK_results'):
         os.makedirs('AFFDK_results')
     t2 = time.time()
@@ -120,7 +116,7 @@ def main(specifics, lam_T, lam_S):
     
 
     
-    case.TFDK.do(lam_T)
+    case.TFDK.do(lam='optim')
     np.save(case.WV_path + specifics + '_TFDK_rec.npy',
             case.TFDK.results.rec_axis[-1])
     ex.add_artifact(case.WV_path + specifics + '_TFDK_rec.npy')
