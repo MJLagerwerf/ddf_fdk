@@ -118,12 +118,7 @@ def main(specifics, lam_T, lam_S):
 
     print('Finished FDKs')
     
-#    case.LSFDK.do()   
-#    Q[5, :] = case.LSFDK.results.Q
-#    np.save(case.WV_path + specifics + '_LSFDK_rec.npy',
-#            case.LSFDK.results.rec_axis[-1])
-#    ex.add_artifact(case.WV_path + specifics + '_LSFDK_rec.npy')
-    
+
     
     case.TFDK.do(lam_T)
     np.save(case.WV_path + specifics + '_TFDK_rec.npy',
@@ -131,11 +126,7 @@ def main(specifics, lam_T, lam_S):
     ex.add_artifact(case.WV_path + specifics + '_TFDK_rec.npy')
     Q[6, :] = case.TFDK.results.Q
     
-#    case.SFDK.do(lam_S)
-#    np.save(case.WV_path + specifics + '_SFDK_rec.npy',
-#            case.SFDK.results.rec_axis[-1])
-#    ex.add_artifact(case.WV_path + specifics + '_SFDK_rec.npy')
-#    Q[7, :] = case.SFDK.results.Q
+
 
     np.save(case.WV_path + specifics + '_AtA.npy', case.AtA)
     ex.add_artifact(case.WV_path + specifics + '_AtA.npy')
@@ -143,25 +134,11 @@ def main(specifics, lam_T, lam_S):
     ex.add_artifact(case.WV_path + specifics + '_Atg.npy')
     np.save(case.WV_path + specifics + '_DDC_norm.npy', case.DDC_norm)
     ex.add_artifact(case.WV_path + specifics + '_DDC_norm.npy')
-#    np.save(case.WV_path + specifics + '_CtC.npy', case.CtC)
-#    ex.add_artifact(case.WV_path + specifics + '_CtC.npy')
-#    np.save(case.WV_path + specifics + '_gradFDK_norm.npy', case.gradFDK_norm)
-#    ex.add_artifact(case.WV_path + specifics + '_gradFDK_norm.npy')
+
 
     print('Finished AF-FDK')
 
 
-#    # Do a SIRT reconstruction and save the results
-#    niter = [20, 50, 100]
-#    case.SIRT.do(niter)
-#    for ni in range(len(niter)):
-#        np.save(case.WV_path + specifics + '_SIRT' + str(niter[ni]) +
-#                '_rec.npy', case.SIRT.results.rec_axis[ni])
-#        ex.add_artifact(case.WV_path + specifics + '_SIRT' + str(niter[ni]) + \
-#                        '_rec.npy')
-#
-#    print('Finished SIRT')
-#    Q[8:11, :] = case.SIRT.results.Q
 
 
     case.table()

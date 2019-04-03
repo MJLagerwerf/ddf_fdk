@@ -126,6 +126,12 @@ def main(specifics):
     ex.add_artifact(case.WV_path + specifics + '_TFDK_rec.npy')
     Q[6, :] = case.TFDK.results.Q
     
+    np.save(case.WV_path + specifics + '_AtA.npy', case.AtA)
+    ex.add_artifact(case.WV_path + specifics + '_AtA.npy')
+    np.save(case.WV_path + specifics + '_Atg.npy', case.Atg)
+    ex.add_artifact(case.WV_path + specifics + '_Atg.npy')
+    np.save(case.WV_path + specifics + '_DDC_norm.npy', case.DDC_norm)
+    ex.add_artifact(case.WV_path + specifics + '_DDC_norm.npy')
 
     print('Finished AF-FDK')
 
