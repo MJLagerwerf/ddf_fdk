@@ -16,6 +16,9 @@ import os
 import shutil
 from tempfile import mkstemp
 from scipy.ndimage import gaussian_filter
+
+from .phantom_class import phantom
+from . import CCB_CT_class as CT
 # %% Working vars function
 class working_var_map:
     def __init__(self):
@@ -328,3 +331,36 @@ def subsamp_data(g, factor=4):
 # %%
 def L1_distance(rec, ref):
     return np.linalg.norm(np.ravel(rec) - np.ravel(ref), 1)
+
+
+# %%
+def load_results(path, nMeth, nExp, files, spec, spec_var):
+    Q = np.zeros((nMeth, nExp, 3))
+    i = 0
+    for f in files:
+        Q[:, i, :] = np.load(path + str(f)+ '/' + spec + str(spec_var[i]) + '_Q.npy')
+        i += 1
+    return Q
+
+# %%
+def MTF_x(filts, data_obj):
+    DO = phantom(data_obj.voxels, 'Plane_yz', data_obj.angles, None,
+                     data_obj.src_rad, data_obj.det_rad)
+    CTo = CT.CCB_CT(DO)
+    CTo.init_algo()
+    CTo.init_DDF_FDK()
+    MTF_x_list = []
+    mid = data_obj.voxels[0] // 2
+    for f in filts:
+        if type(f) == list:
+            PlSF_x = CTo.FDK.filt_LP('Shepp-Logan', f, compute_results='no')
+        elif type(f) == str:
+            PlSF_x = CTo.FDK.do(f, compute_results='no')
+        else:        
+            PlSF_x = CTo.FDK_bin(f)
+        MTF_x = np.abs(np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(PlSF_x), 
+                                             axes=(0, 1, 2))))
+        MTF_x_list += [MTF_x[mid:, mid, mid] / MTF_x[mid, mid, mid]]
+
+    return MTF_x_list
+    

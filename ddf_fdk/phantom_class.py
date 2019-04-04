@@ -812,6 +812,20 @@ class phantom:
             f = reco_space.element(po.addDelta(voxels[0], a=1, sigma=1))
             return reco_space, f
 
+
+        elif self.PH == 'Plane_yz':
+            self.volumesize = np.array([12, 12, 12], dtype='float32')
+            self.detecsize = np.array([2 * self.volumesize[0],
+                                       self.volumesize[1]])
+            # Make the reconstruction space
+            reco_space = odl.uniform_discr(min_pt=-self.volumesize,
+                                           max_pt=self.volumesize,
+                                            shape=voxels, dtype='float32')
+            f = np.zeros(voxels)
+            f[voxels[0] // 2, :, :] = 1
+            f = reco_space.element(f)
+            return reco_space, f
+
         elif type(self.PH) == dict:
             self.volumesize = np.array(self.PH['voxelsize'],
                                        dtype='float32')

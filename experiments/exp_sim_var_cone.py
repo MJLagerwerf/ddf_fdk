@@ -137,7 +137,6 @@ def main(specifics):
 
 
 
-
     case.table()
     latex_table = open(case.WV_path + specifics + '_latex_table.txt', 'w')
     latex_table.write(case.table_latex)
