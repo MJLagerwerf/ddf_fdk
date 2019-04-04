@@ -343,24 +343,58 @@ def load_results(path, nMeth, nExp, files, spec, spec_var):
     return Q
 
 # %%
-def MTF_x(filts, data_obj):
-    DO = phantom(data_obj.voxels, 'Plane_yz', data_obj.angles, None,
-                     data_obj.src_rad, data_obj.det_rad)
-    CTo = CT.CCB_CT(DO)
-    CTo.init_algo()
-    CTo.init_DDF_FDK()
-    MTF_x_list = []
-    mid = data_obj.voxels[0] // 2
-    for f in filts:
-        if type(f) == list:
-            PlSF_x = CTo.FDK.filt_LP('Shepp-Logan', f, compute_results='no')
-        elif type(f) == str:
-            PlSF_x = CTo.FDK.do(f, compute_results='no')
-        else:        
-            PlSF_x = CTo.FDK_bin(f)
-        MTF_x = np.abs(np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(PlSF_x), 
-                                             axes=(0, 1, 2))))
-        MTF_x_list += [MTF_x[mid:, mid, mid] / MTF_x[mid, mid, mid]]
+def MTF_x(filts, voxels, angles, src_rad, det_rad):
+    nVar, step = 6, 2
+    MTF_list = np.zeros((len(filts), voxels[0] // 2))
+    for k in range(nVar):
+        DO = phantom(voxels, 'Plane_yz', angles, None, src_rad, det_rad,
+                         offset_x=step * k - (nVar // 2) * step)
+        CTo = CT.CCB_CT(DO)
+        CTo.init_algo()
+        CTo.init_DDF_FDK()
+        mid = voxels[0] // 2
+        pad_op = odl.ResizingOperator(DO.reco_space, ran_shp=(voxels[0] * 2,
+                                                              voxels[1],
+                                                              voxels[2]))
+        tel = 0
+        for f in filts:
+            if type(f) == list:
+                PlSF_x = CTo.FDK.filt_LP('Shepp-Logan', f, compute_results='no')
+            elif type(f) == str:
+                PlSF_x = CTo.FDK.do(f, compute_results='no')
+            else:        
+                PlSF_x = CTo.FDK_bin(f)
+            
+            MTF_x = pad_op.inverse(np.abs(np.fft.fftshift(np.fft.fftn(
+                            np.fft.ifftshift(pad_op(PlSF_x))))))
+            
+            MTF_list[tel] += MTF_x[mid:, mid, mid] / MTF_x[mid, mid, mid] / nVar
+            tel += 1
+    return MTF_list
 
-    return MTF_x_list
+# %%
+def make_filt_from_path(path, lam, Exp_op, w_detu):
+    # Load the matrix inverse problem and corresponding scaling
+    AtA = np.load(path + 'AtA.npy')
+    Atg = np.load(path + 'Atg.npy')
+    DDC_norm = np.load(path + 'DDC_norm.npy')
     
+    # Scale the regularization parameter
+    lamT = lam * DDC_norm * np.eye(np.shape(AtA)[0])
+    
+    # Compute the filter
+    return Exp_op(np.linalg.solve(AtA + lamT, Atg)) * 4 * w_detu
+
+
+# %%
+def make_filt_coeff_from_path(path, lam):
+    # Load the matrix inverse problem and corresponding scaling
+    AtA = np.load(path + 'AtA.npy')
+    Atg = np.load(path + 'Atg.npy')
+    DDC_norm = np.load(path + 'DDC_norm.npy')
+    
+    # Scale the regularization parameter
+    lamT = lam * DDC_norm * np.eye(np.shape(AtA)[0])
+    
+    # Compute the filter coefficients
+    return np.linalg.solve(AtA + lamT, Atg)

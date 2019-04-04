@@ -814,6 +814,7 @@ class phantom:
 
 
         elif self.PH == 'Plane_yz':
+            x = kwargs['offset_x']
             self.volumesize = np.array([12, 12, 12], dtype='float32')
             self.detecsize = np.array([2 * self.volumesize[0],
                                        self.volumesize[1]])
@@ -822,7 +823,8 @@ class phantom:
                                            max_pt=self.volumesize,
                                             shape=voxels, dtype='float32')
             f = np.zeros(voxels)
-            f[voxels[0] // 2, :, :] = 1
+            mid = voxels[0] // 2
+            f[mid + x, :, :] = 1
             f = reco_space.element(f)
             return reco_space, f
 
