@@ -36,6 +36,7 @@ def cfg():
     lp = '/export/scratch2/lagerwer/NNFDK/phantoms/'
     f_load_path = None
     g_load_path = None
+    
     nTest = 25
     window = [0.2, 0.6]
 
