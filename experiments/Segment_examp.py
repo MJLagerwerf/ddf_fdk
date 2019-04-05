@@ -81,66 +81,9 @@ result_RL, result_opt_RL, seg_RL = compute_optimal_thresh(rec_RL, seg_GT)
 result_B2, result_opt_B2, seg_B2 = compute_optimal_thresh(rec_RL_B2, seg_GT)
 result_B4, result_opt_B4, seg_B4 = compute_optimal_thresh(rec_RL_B4, seg_GT)
 result_G2, result_opt_G2, seg_G2 = compute_optimal_thresh(rec_RL_G5, seg_GT)
-# %%
-def rL2norm(x, y):
-    return np.linalg.norm(np.asarray(x) * 1 - np.asarray(y) * 1) / \
-                 np.linalg.norm(np.asarray(y) * 1)
-# %%
-MSRs = np.zeros(5)
-MSR = np.zeros(5)
-MSRs[0] = rL2norm(case.FwP(seg_T), case.FwP(seg_GT))
-MSRs[1] = rL2norm(case.FwP(seg_RL), case.FwP(seg_GT))
-MSRs[2] = rL2norm(case.FwP(seg_B2), case.FwP(seg_GT))
-MSRs[3] = rL2norm(case.FwP(seg_B4), case.FwP(seg_GT))
-MSRs[4] = rL2norm(case.FwP(seg_G2), case.FwP(seg_GT))
-MSR[0] = rL2norm(case.FwP(rec_T), case.g)
-MSR[1] = rL2norm(case.FwP(rec_RL), case.g)
-MSR[2] = rL2norm(case.FwP(rec_RL_B2), case.g)
-MSR[3] = rL2norm(case.FwP(rec_RL_B4), case.g)
-MSR[4] = rL2norm(case.FwP(rec_RL_G2), case.g)
-# %%
-MSEs = np.zeros(5)
-MSE = np.zeros(5)
-MSEs[0] = rL2norm((seg_T), seg_GT)
-MSEs[1] = rL2norm((seg_RL), (seg_GT))
-MSEs[2] = rL2norm((seg_B2), (seg_GT))
-MSEs[3] = rL2norm((seg_B4), (seg_GT))
-MSEs[4] = rL2norm((seg_G2), (seg_GT))
-MSE[0] = rL2norm((rec_T), case.phantom.f)
-MSE[1] = rL2norm((rec_RL), case.phantom.f)
-MSE[2] = rL2norm((rec_RL_B2), case.phantom.f)
-MSE[3] = rL2norm((rec_RL_B4), case.phantom.f)
-MSE[4] = rL2norm((rec_RL_G2), case.phantom.f)
-# %%
-#seg_T = aff.image_measures.comp_segment(rec_T)
-#seg_RL = aff.image_measures.comp_segment(rec_RL)
-#seg_RL_B2 = aff.image_measures.comp_segment(rec_RL_B2)
-#seg_RL_G2 = aff.image_measures.comp_segment(rec_RL_G2)
-#seg_RL_G5 = aff.image_measures.comp_segment(rec_RL_G5)
-#seg_GT = aff.image_measures.comp_segment(data_obj.f)
-
-
 
 # %%
 mid = pix // 2 
-#pylab.close('all')
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_GT[:, mid, :]))
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_T[:, mid, :]))
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_RL[:, mid, :]))
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_B2[:, mid, :]))
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_B4[:, mid, :]))
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_G2[:, mid, :]))
-
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_RL_G2[:, mid, :]))
-#pylab.figure()
-#pylab.imshow(np.rot90(seg_RL_G5[:,mid, :]))
 
 
 # %%
@@ -202,18 +145,6 @@ pylab.xlabel('x')
 pylab.ylabel('z')
 pylab.xticks([], [])
 pylab.yticks([], [])
-
-
-# %%
-#pylab.close('all')
-#pylab.figure(figsize=[20,8])
-#pylab.imshow(np.rot90(case.g[0, :, :]))
-#pylab.colorbar()
-#pylab.title('Projection data (projection angle=0)')
-#pylab.xticks([], [])
-#pylab.yticks([], [])
-#pylab.xlabel('u')
-#pylab.ylabel('v')
 
 
 

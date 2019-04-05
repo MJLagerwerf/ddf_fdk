@@ -19,6 +19,7 @@ from scipy.ndimage import gaussian_filter
 
 from .phantom_class import phantom
 from . import CCB_CT_class as CT
+from . import image_measures as im
 # %% Working vars function
 class working_var_map:
     def __init__(self):
@@ -398,3 +399,23 @@ def make_filt_coeff_from_path(path, lam):
     
     # Compute the filter coefficients
     return np.linalg.solve(AtA + lamT, Atg)
+
+# %%
+def comp_global_seg(rec, seg_GT, nTest, window):
+    thresh_max = np.max(rec)
+    result = []
+    step_size = (window[1] - window[0]) / nTest
+    for i in range(nTest):
+        seg = (rec > thresh_max * (window[0] + step_size * i) )
+        result += [im.comp_rSegErr(seg, seg_GT)]
+    result = np.array(result)
+    thresh_opt = thresh_max * (window[0] + step_size * np.argmin(result))
+    seg = (rec > thresh_opt)
+    return result, result.min(), seg
+
+# %%
+def get_axis(volume):
+    mid = np.size(volume, 0) // 2
+    return [volume[:, :, mid], volume[:, mid, :], volume[mid, :, :]]
+
+        
