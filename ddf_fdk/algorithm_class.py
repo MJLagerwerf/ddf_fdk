@@ -15,6 +15,7 @@ import gc
 from . import support_functions as sup
 from . import image_measures as im
 from .phantom_class import phantom
+from .real_data_class import real_data
 from . import CCB_CT_class as CT
 from . import SIRT_ODL_astra_backend as SIRT_meth
 from . import FDK_ODL_astra_backend as FDK_meth
@@ -327,13 +328,18 @@ class TFDK_class(AFFDK_class):
         self.CT_obj.compute_GS()
         voxels_LR = np.asarray(self.CT_obj.phantom.voxels) // factor
         g_LR = sup.subsamp_data(self.CT_obj.g)
-        DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
-                              self.CT_obj.noise, self.CT_obj.src_rad,
-                              self.CT_obj.det_rad, load_data_g=g_LR)
+        if self.CT_obj.phantom.data_type == 'simulated':
+            DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
+                                  self.CT_obj.noise, self.CT_obj.src_rad,
+                                  self.CT_obj.det_rad, load_data_g=g_LR)
+        elif self.CT_obj.phantom.data_type == 'real':
+            DO = real_data(g_LR, self.CT_obj.pix_size, self.CT_obj.src_rad,
+                           self.CT_obj.det_rad, self.CT_obj.angles, ang_freq=1)
+        
         expansion_op = 'linear'
         bin_param = 2
         # Initialize operators and algorithms
-        CTo = CT.CCB_CT(DO)
+        CTo = CT.CCB_CT(DO, data_struct=False)
         # Initialize the algorithms (FDK, SIRT, AFFDK)
         CTo.init_algo()
         # Initialize DDF-FDK algorithm    

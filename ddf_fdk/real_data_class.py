@@ -6,13 +6,6 @@ Created on Tue Jan 23 13:16:18 2018
 @author: lagerwer
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 18 13:48:10 2017
-
-@author: lagerwer
-"""
 
 import numpy as np
 import odl
@@ -22,18 +15,22 @@ class real_data:
     def __init__(self, dataset, pix_size, src_rad, det_rad, angles, ang_freq):
         self.data_type = 'real'
         # %% load data
-        g_vec = np.load(dataset['g'])
         self.angles_in = angles
         self.ang_freq = ang_freq
         self.dataset = dataset
-        # %% adapt data
-        g_vec = g_vec[::ang_freq, :, :]
-
-        rs_detu = np.size(g_vec, 2) * 2
-        diff = int((rs_detu - np.size(g_vec, 1)) / 2)
-        g_vec = np.concatenate((np.zeros((
-                np.size(g_vec, 0), diff, np.size(g_vec, 2))), g_vec,
-                np.zeros((np.size(g_vec, 0), diff, np.size(g_vec, 2)))), 1)
+        if type(dataset) == dict:
+            g_vec = np.load(dataset['g'])
+            # %% adapt data
+            g_vec = g_vec[::ang_freq, :, :]
+    
+            rs_detu = np.size(g_vec, 2) * 2
+            diff = int((rs_detu - np.size(g_vec, 1)) / 2)
+            g_vec = np.concatenate((np.zeros((
+                    np.size(g_vec, 0), diff, np.size(g_vec, 2))), g_vec,
+                    np.zeros((np.size(g_vec, 0), diff, np.size(g_vec, 2)))), 1)
+        else:
+            g_vec = dataset
+        
         # Define the dimensions of the problem in cm
         self.pix_size = pix_size
         self.angles = g_vec.shape[0]
@@ -56,24 +53,28 @@ class real_data:
             self.mask_name = dataset['mask']
 
         # Make a circular scanning geometry
-        angle_partition = odl.uniform_partition(0, 2 * np.pi, angles)
+        angle_partition = odl.uniform_partition(0, 2 * np.pi, self.angles)
 
         # Make a flat detector space
         det_partition = odl.uniform_partition(-self.detecsize,
                                               self.detecsize,
                                                    self.dpix)
-        self.det_space = odl.uniform_discr_frompartition(det_partition, dtype='float32')
+        self.det_space = odl.uniform_discr_frompartition(det_partition,
+                                                         dtype='float32')
         # Create geometry
         self.geometry = odl.tomo.ConeFlatGeometry(
                 angle_partition, det_partition, src_radius=self.src_rad,
                                 det_radius=self.det_rad, axis=[0, 0, 1])
-        self.geometry = self.geometry[::ang_freq]
-        self.angle_space = odl.uniform_discr_frompartition(self.geometry.motion_partition)
+        
+        self.angle_space = odl.uniform_discr_frompartition(
+                self.geometry.motion_partition)
         # Forward Projection
-        self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry, use_cache=False)
+        self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry,
+                                         use_cache=False)
 
         # Backward Projection
-        self.BwP = odl.tomo.RayBackProjection(self.reco_space, self.geometry, use_cache=False)
+        self.BwP = odl.tomo.RayBackProjection(self.reco_space, self.geometry,
+                                              use_cache=False)
 
         self.g = self.BwP.domain.element(g_vec)
 

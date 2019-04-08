@@ -25,14 +25,13 @@ from . import real_data_class as RD
 # %%
 class CCB_CT:
     # %% Initialize the MR-FDK
-    def __init__(self, data_obj, data_struct='yes', **kwargs):
+    def __init__(self, data_obj, data_struct=True, **kwargs):
         # %% Store the input in the object
         # BE FUCKING CONSISTENT WITH RENAMING ETC. 
         self.pix = data_obj.voxels[0]
         self.angles = data_obj.angles
         self.src_rad = data_obj.src_rad
         self.det_rad = data_obj.det_rad
-        self.PH = data_obj.PH
         self.data_struct = data_struct
         self.rec_methods = []
         # %% If we need a data structure, make one:
@@ -48,9 +47,10 @@ class CCB_CT:
         self.w_detu = (2 * self.phantom.detecsize[0]) / dpix[0]
         self.w_detv = (2 * self.phantom.detecsize[1]) / dpix[1]
         if self.phantom.data_type == 'simulated':
+            self.PH = data_obj.PH
             self.noise = data_obj.noise
             # Do we need a mask?
-            if data_struct == 'yes':
+            if data_struct:
                 self.phantom.make_mask(self.WV_path)
             else:
                 pass
@@ -71,6 +71,7 @@ class CCB_CT:
         else:
             src_radius = self.phantom.src_rad
             det_radius = self.phantom.det_rad
+            self.pix_size = self.phantom.pix_size
             self.angle_space = self.phantom.angle_space
             self.angles = np.size(self.angle_space)
             self.det_space = self.phantom.det_space
@@ -216,10 +217,14 @@ class CCB_CT:
 # %% Compute a Golden Standard reconstruction on low resolution
     def compute_GS(self, factor=4):
         g_LR = sup.integrate_data(self.g)
-        voxels_LR = np.asarray(self.phantom.voxels) // factor
-        DO = PH.phantom(voxels_LR, self.PH, self.angles, self.noise,
+        if self.phantom.data_type == 'simulated':
+            voxels_LR = np.asarray(self.phantom.voxels) // factor
+            DO = PH.phantom(voxels_LR, self.PH, self.angles, self.noise,
                         self.src_rad, self.det_rad, load_data_g=g_LR)
-        CTo = CCB_CT(DO)
+        elif self.phantom.data_type == 'real':
+            DO = RD.real_data(g_LR, self.pix_size, self.src_rad, self.det_rad,
+                              self.angles, ang_freq=1)
+        CTo = CCB_CT(DO, data_struct=False)
         CTo.init_algo()
         self.GS = CTo.SIRT_NN.do(niter=200, compute_results='no')
         CTo, DO, g_LR = None, None, None
