@@ -29,7 +29,7 @@ noise = None#['Poisson', 2 ** 10]
 
 # The amount of projection angles in the measurements
 angles = 2000
-ang_freq = 64
+ang_freq = 32
 
 # Source to center of rotation radius
 src_rad = 59
