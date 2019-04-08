@@ -36,7 +36,7 @@ def cfg():
     # The amount of projection angles in the measurements
     if ntype[it_i] == 'good':
         angles = 2000
-        ang_freq = 64
+        ang_freq = 32
     elif ntype[it_i] == 'noisy':
         angles = 500
         ang_freq = 1
