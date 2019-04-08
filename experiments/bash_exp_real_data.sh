@@ -9,7 +9,7 @@
 for i in {0..1}
 do
     python exp_real_data.py -p -F \
-    AFFDK_results/real_data with it_i=$
+    AFFDK_results/real_data with it_i=$i
 done
 
 
