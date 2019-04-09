@@ -41,9 +41,9 @@ pix_size = 0.00748 * 4
 # Options: None,  ['Gaussian', %intensity], ['Poisson', I_0], ['loaded data',
 #                    filename]
 lp = '/export/scratch2/lagerwer/data/FleXray/pomegranate1_02MAR/processed_data/'
-dataset = {'g' : lp + 'g_good_ODL_sc4.npy',
-               'ground_truth' : lp + 'ground_truth_sc4.npy',
-                'mask' : lp + 'mask_sc4.npy'}
+dataset = {'g' : lp + 'g_good_ODL.npy',
+               'ground_truth' : lp + 'ground_truth.npy',
+                'mask' : lp + 'mask.npy'}
 # Create a data object
 #data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)#, load_data=f_load_path)
 data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, angles, ang_freq)
