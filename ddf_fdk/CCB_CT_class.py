@@ -88,10 +88,12 @@ class CCB_CT:
                                                             dtype='float64')
         # %% Create the FP and BP and the data
         # Forward Projection
-        self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry)
+        self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry,
+                                         use_cache=False)
 
         # Backward Projection
-        self.BwP = odl.tomo.RayBackProjection(self.reco_space, self.geometry)
+        self.BwP = odl.tomo.RayBackProjection(self.reco_space, self.geometry,
+                                              use_cache=False)
 
         self.g = self.phantom.g
         # %% Create the operators for the FDK framework

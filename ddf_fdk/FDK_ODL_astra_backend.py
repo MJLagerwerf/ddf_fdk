@@ -68,4 +68,5 @@ def FDK_astra(g, filt, geom, ang_freq=None):
     astra.algorithm.delete(alg_id)
     astra.data3d.delete(rec_id)
     astra.data3d.delete(proj_id)
+    astra.data2d.delete(filter_id)
     return rec

@@ -105,9 +105,6 @@ def main(specifics):
 
     print('Finished FDKs')
     
-
-    
-    
     case.TFDK.do(lam='optim')
     np.save(case.WV_path + specifics + '_TFDK_rec.npy',
             case.TFDK.results.rec_axis[-1])

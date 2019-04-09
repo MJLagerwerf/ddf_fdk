@@ -59,6 +59,7 @@ class results:
         li += [i for i in self.Q]
         self.Ql += [li]
 
+
     def add_results(self, algo, rec, measures, var, param, t_rec):
         self.rec_it += 1
         self.var += [var]
@@ -198,6 +199,8 @@ class FDK_class(algorithm_class):
         t_rec = time.time() - t
         if compute_results == 'yes':
             self.comp_results(rec, measures, h, filt_name, t_rec)
+            rec = None
+            gc.collect()
         else:
             return rec
 

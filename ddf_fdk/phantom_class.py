@@ -131,7 +131,7 @@ class phantom:
             angle_partition, det_partition, src_radius=src_radius,
                             det_radius=det_radius, axis=[0, 0, 1])
 
-        FP = odl.tomo.RayTransform(reco_space_up, geometry)
+        FP = odl.tomo.RayTransform(reco_space_up, geometry, use_cache=False)
 
         resamp = odl.Resampling(data_space_up, data_space)
         if 'load_data_g' in kwargs:

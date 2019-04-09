@@ -16,7 +16,7 @@ pylab.close('all')
 t = time.time()
 # %% Set variables
 # The size of the measured objects in voxels
-pix = 1024
+pix = 256
 voxels = [pix, pix, pix]
 
 # Pick your phantom
@@ -41,26 +41,36 @@ pix_size = 0.00748 * 4
 # Options: None,  ['Gaussian', %intensity], ['Poisson', I_0], ['loaded data',
 #                    filename]
 lp = '/export/scratch2/lagerwer/data/FleXray/pomegranate1_02MAR/processed_data/'
-dataset = {'g' : lp + 'g_good_ODL.npy',
-               'ground_truth' : lp + 'ground_truth.npy',
-                'mask' : lp + 'mask.npy'}
+dataset = {'g' : lp + 'g_good_ODL_sc4.npy',
+               'ground_truth' : lp + 'ground_truth_sc4.npy',
+                'mask' : lp + 'mask_sc4.npy'}
 # Create a data object
 #data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)#, load_data=f_load_path)
 data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, angles, ang_freq)
 # Expansion operator and binnin parameter
-expansion_op = 'linear'
-bin_param = 2
-
-# %% Create the circular cone beam CT class
+#expansion_op = 'linear'
+#bin_param = 2
+#
+## %% Create the circular cone beam CT class
 case = ddf.CCB_CT(data_obj)#
-# Initialize the algorithms (FDK, SIRT)
+## Initialize the algorithms (FDK, SIRT)
 case.init_algo()
 case.init_DDF_FDK()
 # %%
-case.FDK.do('Shepp-Logan')
-case.TFDK.do('optim')
+f = 'Shepp-Logan'
+#LP_filts = [['Gauss', 8], ['Gauss', 5], ['Bin', 2], ['Bin', 5]]
+#
+#
+case.FDK.do(f)#, backend='ODL')
+#
+#for lp in LP_filts:
+#    case.FDK.filt_LP(f, lp)
+
+#case.TFDK.do('optim')
+
 # %% Check convolution
 case.FDK.show()
 case.TFDK.show()
 
+case.FDK.do('Ram-Lak')
 
