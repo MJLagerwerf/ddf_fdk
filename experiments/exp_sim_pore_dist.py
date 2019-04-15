@@ -26,8 +26,7 @@ def cfg():
     phantom = 'Foam'
     # Number of angles
     angles = 360
-    I0 = [2 ** 8, 2 ** 9, 2 ** 10, 2 ** 11, 2 ** 12, 2 ** 13, 2 ** 14, 2 ** 16,
-          2 ** 18, 2 ** 20]
+    I0 = [2 ** 8, 2 ** 9, 2 ** 10, 2 ** 11, 2 ** 12, 2 ** 13, 2 ** 14]
     noise = ['Poisson', I0[it_i]]
 
     # Source radius
@@ -39,7 +38,9 @@ def cfg():
     
     nTest = 25
     window = [0.2, 0.6]
-
+    
+    bin_size = 5
+    number_bins = 10
 
     # Specifics for the expansion operator
     Exp_bin = 'linear'
@@ -77,7 +78,7 @@ def CT(pix, phantom, angles, src_rad, noise, Exp_bin, bin_param, f_load_path,
 
 # %%
 @ex.automain
-def main(specifics, nTest, window):
+def main(specifics, nTest, window, bin_size, number_bins):
     if not os.path.exists('AFFDK_results'):
         os.makedirs('AFFDK_results')
     t2 = time.time()
@@ -88,15 +89,21 @@ def main(specifics, nTest, window):
 
     seg_err = np.zeros((11))
     seg_err_list = np.zeros((11, nTest))
-    por = np.zeros((11))
+    pore_dist = np.zeros((12, number_bins))
     
     np.save(case.WV_path + specifics + '_g.npy', case.g)
     ex.add_artifact(case.WV_path + specifics + '_g.npy')
     
     # Create the ground truth segementation
     seg_GT = (np.asarray(case.phantom.f) > 0.239)
+    np.save(case.WV_path + specifics + '_GT_seg_full.npy', (seg_GT))
+    ex.add_artifact(case.WV_path + specifics + '_GT_seg_full.npy')
     np.save(case.WV_path + specifics + '_GT_seg.npy', ddf.get_axis(seg_GT))
     ex.add_artifact(case.WV_path + specifics + '_GT_seg.npy')
+    pore_dist[0, :] = ddf.pore_size_distr(seg_GT, bin_size, number_bins)
+    
+    
+    
     
     f = 'Shepp-Logan'
     LP_filts = [['Gauss', 8], ['Gauss', 5], ['Bin', 2], ['Bin', 5]]
@@ -104,7 +111,9 @@ def main(specifics, nTest, window):
     rec = case.FDK.do(f, compute_results='no')
     seg_err_list[0, :], seg_err[0], seg = ddf.comp_global_seg(rec, seg_GT,
                 nTest, window)
-    por[0] = ddf.comp_porosity(seg)
+    pore_dist[1, :] = ddf.pore_size_distr(seg, bin_size, number_bins)
+    np.save(case.WV_path + specifics + '_FDKSL_seg_full.npy', (seg))
+    ex.add_artifact(case.WV_path + specifics + '_FDKSL_seg_full.npy')
     np.save(case.WV_path + specifics + '_FDKSL_seg.npy', ddf.get_axis(seg))
     ex.add_artifact(case.WV_path + specifics + '_FDKSL_seg.npy')
 
@@ -115,13 +124,21 @@ def main(specifics, nTest, window):
         rec = case.FDK.filt_LP(f, lp, compute_results='no')
         seg_err_list[tel, :], seg_err[tel], seg = ddf.comp_global_seg(rec,seg_GT,
                     nTest, window)
-        por[tel] = ddf.comp_porosity(seg)
+        pore_dist[tel + 1, :] = ddf.pore_size_distr(seg, bin_size, number_bins)
         if lp[0] == 'Gauss':
+            np.save(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1]) + 
+                    '_seg_full.npy', (seg))
+            ex.add_artifact(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1])
+                            + '_seg_full.npy')
             np.save(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1]) + 
                     '_seg.npy', ddf.get_axis(seg))
             ex.add_artifact(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1])
                             + '_seg.npy')
         elif lp[0] == 'Bin':
+            np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
+                    '_seg.npy', ddf.get_axis(seg))
+            ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
+                            + '_seg.npy')
             np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
                     '_seg.npy', ddf.get_axis(seg))
             ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
@@ -137,7 +154,9 @@ def main(specifics, nTest, window):
     rec = case.TFDK.do(lam='optim', compute_results='no')
     seg_err_list[6, :], seg_err[6], seg = ddf.comp_global_seg(rec, seg_GT,
                 nTest, window)
-    por[6] = ddf.comp_porosity(seg)
+    pore_dist[7, :] = ddf.pore_size_distr(seg, bin_size, number_bins)
+    np.save(case.WV_path + specifics + '_TFDK_seg_full.npy', (seg))
+    ex.add_artifact(case.WV_path + specifics + '_TFDK_seg_full.npy')
     np.save(case.WV_path + specifics + '_TFDK_seg.npy', ddf.get_axis(seg))
     ex.add_artifact(case.WV_path + specifics + '_TFDK_seg.npy')
 
@@ -168,8 +187,8 @@ def main(specifics, nTest, window):
     np.save(case.WV_path + specifics + '_seg_err_list.npy', seg_err_list)
     ex.add_artifact(case.WV_path + specifics + '_seg_err_list.npy')
 
-    np.save(case.WV_path + specifics + '_por.npy', por)
-    ex.add_artifact(case.WV_path + specifics + '_por.npy')
+    np.save(case.WV_path + specifics + '_pore_dist.npy', pore_dist)
+    ex.add_artifact(case.WV_path + specifics + '_pore_dist.npy')
     case = None
     gc.collect()
-    return por
+    return pore_dist

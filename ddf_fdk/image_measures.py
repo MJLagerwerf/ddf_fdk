@@ -13,6 +13,8 @@ import gc
 from skimage.filters import threshold_otsu
 import scipy.ndimage.morphology as sp
 import scipy as sps
+from scipy import ndimage
+import pylab
 
 
 # %%
@@ -37,6 +39,22 @@ def comp_porosity(X):
     fig = np.invert(fig) * 2 + np.invert(np.asarray(X) * 1)
     return porosity(fig)
     
+def pore_size_distr(seg, bin_size, number_bins=10, show_particles=False):
+    part_count = np.zeros((number_bins))
+    mid = np.size(seg, 0) // 2
+    label_array = np.zeros((np.shape(seg)))
+    a = np.invert(np.asarray(seg))
+    for i in range(number_bins):
+        label_array, part_count[i] = ndimage.measurements.label(a)
+        a = sp.binary_erosion(np.asarray(a), iterations=bin_size)
+        if show_particles:
+            pylab.figure()
+            pylab.imshow(label_array[:, :, mid])        
+        if part_count[i] <=2:
+            print('No larger objects anymore')
+            break
+        
+    return part_count
 # %%    
 # ! ! ! TODO: Add gaussian weights for SSIM
 def comp_ssim(X, Y, C1, C2, filt_size):

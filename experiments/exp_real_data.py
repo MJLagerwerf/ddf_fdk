@@ -87,7 +87,7 @@ def main(specifics):
     np.save(case.WV_path + specifics + '_FDKSL_rec.npy',
             case.FDK.results.rec_axis[-1])
     ex.add_artifact(case.WV_path + specifics + '_FDKSL_rec.npy')
-    
+    gc.collect()
     for lp in LP_filts:
         case.FDK.filt_LP(f, lp)
         if lp[0] == 'Gauss':
@@ -100,7 +100,7 @@ def main(specifics):
                     '_rec.npy', case.FDK.results.rec_axis[-1])
             ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
                             + '_rec.npy')
-    
+        gc.collect()
     Q[:5, :] = case.FDK.results.Q
 
     print('Finished FDKs')

@@ -326,11 +326,11 @@ class TFDK_class(AFFDK_class):
             return rec
         
 
-    def optim_param(self, factor=4):
+    def optim_param(self, factor=4, it=200):
         # Create low resolution problem
-        self.CT_obj.compute_GS()
+        self.CT_obj.compute_GS(factor, it)
         voxels_LR = np.asarray(self.CT_obj.phantom.voxels) // factor
-        g_LR = sup.subsamp_data(self.CT_obj.g)
+        g_LR = sup.subsamp_data(self.CT_obj.g, factor)
         if self.CT_obj.phantom.data_type == 'simulated':
             DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
                                   self.CT_obj.noise, self.CT_obj.src_rad,

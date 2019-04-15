@@ -217,8 +217,8 @@ class CCB_CT:
 
 
 # %% Compute a Golden Standard reconstruction on low resolution
-    def compute_GS(self, factor=4):
-        g_LR = sup.integrate_data(self.g)
+    def compute_GS(self, factor=4, it=200):
+        g_LR = sup.integrate_data(self.g, factor)
         if self.phantom.data_type == 'simulated':
             voxels_LR = np.asarray(self.phantom.voxels) // factor
             DO = PH.phantom(voxels_LR, self.PH, self.angles, self.noise,
@@ -228,7 +228,7 @@ class CCB_CT:
                               self.angles, ang_freq=1)
         CTo = CCB_CT(DO, data_struct=False)
         CTo.init_algo()
-        self.GS = CTo.SIRT_NN.do(niter=200, compute_results='no')
+        self.GS = CTo.SIRT_NN.do(niter=it, compute_results='no')
         CTo, DO, g_LR = None, None, None
         gc.collect()
         
