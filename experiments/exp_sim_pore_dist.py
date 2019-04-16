@@ -136,9 +136,9 @@ def main(specifics, nTest, window, bin_size, number_bins):
                             + '_seg.npy')
         elif lp[0] == 'Bin':
             np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
-                    '_seg.npy', ddf.get_axis(seg))
+                    '_seg_full.npy', (seg))
             ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
-                            + '_seg.npy')
+                            + '_seg_full.npy')
             np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
                     '_seg.npy', ddf.get_axis(seg))
             ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])

@@ -352,6 +352,22 @@ def load_results(path, nMeth, nExp, files, spec, spec_var, **kwargs):
     return Q
 
 # %%
+def load_part_counts(path, nMeth, nExp, files, spec, spec_var, bin_size,
+                     number_bins):
+        Q = np.zeros((nMeth, number_bins, nExp))
+        PD = np.zeros((nMeth, number_bins, nExp))
+        i = 0
+        for f in files:
+            Q[:, :, i] = np.load(path + str(f) + '/' + spec + str(spec_var[i]) 
+                        + '_pore_dist.npy')
+            i += 1
+        for i1 in range(nMeth):
+            for i2 in range(nExp):
+                PD[i1, :, i2] = im.part_count_to_distr(Q[i1, :, i2],
+                          bin_size, number_bins)
+            
+        return PD, Q
+# %%
 def MTF_x(filts, voxels, angles, src_rad, det_rad):
     nVar, step = 6, 2
     MTF_list = np.zeros((len(filts), voxels[0] // 2))
