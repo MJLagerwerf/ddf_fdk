@@ -59,9 +59,17 @@ def pore_size_distr(seg, bin_size, number_bins=10, show_particles=False):
 def part_count_to_distr(part_count, bin_size, number_bins):
     pore_dist = np.zeros(number_bins)
     for i in range(number_bins - 1):
-        pore_dist[i] = part_count[i] - part_count[i + 1]
-    
-    pore_dist[-1] = part_count[-1]
+        if part_count[i] >= part_count[i + 1]:
+            pore_dist[i] = part_count[i] - part_count[i + 1]
+        else:
+            pore_dist[i] = part_count[i]
+            Err = True
+            break
+        Err = False
+    if Err:
+        return pore_dist
+    else:
+        pore_dist[-1] = part_count[-1]
     return pore_dist
 # %%    
 # ! ! ! TODO: Add gaussian weights for SSIM
