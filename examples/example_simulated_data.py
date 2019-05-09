@@ -12,6 +12,7 @@ import ddf_fdk as ddf
 import time
 import pylab
 import scipy.interpolate as sp
+
 pylab.close('all')
 t = time.time()
 # %% Set variables
@@ -28,22 +29,28 @@ phantom = 'Foam'
 noise = None#['Poisson', 2 ** 10]
 
 # The amount of projection angles in the measurements
-angles = 2000
-ang_freq = 32
 
 # Source to center of rotation radius
-src_rad = 59
-det_rad = 10.9
-pix_size = 0.00748 * 4
+
 # Variables above are expressed in the phyisical size of the measured object
 
 # Noise model
 # Options: None,  ['Gaussian', %intensity], ['Poisson', I_0], ['loaded data',
 #                    filename]
-lp = '/export/scratch2/lagerwer/data/FleXray/pomegranate1_02MAR/processed_data/'
-dataset = {'g' : lp + 'g_good_ODL_sc4.npy',
-               'ground_truth' : lp + 'ground_truth_sc4.npy',
-                'mask' : lp + 'mask_sc4.npy'}
+
+lp = '/export/scratch2/lagerwer/data/FleXray/walnuts_02MAY/walnut_01/' 
+dset = 'good/'
+proc_dat = 'processed_data/'
+dataset = {'g' : lp + proc_dat +  'g_good_sc4_shift.npy'}#,
+#               'ground_truth' : lp + 'ground_truth_sc4.npy',
+#                'mask' : lp + 'mask_sc4.npy'}
+angles = 500
+ang_freq = 1
+
+meta = ddf.load_meta(lp + dset, sc=6)
+src_rad = meta['s2o']
+det_rad = meta['o2d']
+pix_size = meta['pix_size']
 # Create a data object
 #data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
 data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, angles, ang_freq)
@@ -58,8 +65,9 @@ case.init_algo()
 #case.init_DDF_FDK()
 # %%
 #case.TFDK.optim_param(4, 100)
-case.FDK.do('Ram-Lak')
-case.FDK.show()
+case.FDK.do('Ram-Lak')#, compute_results='no')
+#rec.show()
+case.FDK.show(clim=[0, 1])
 #case.TFDK.do('optim')
 
 # %% Check convolution

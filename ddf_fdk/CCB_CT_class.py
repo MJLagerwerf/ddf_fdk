@@ -32,6 +32,7 @@ class CCB_CT:
         self.angles = data_obj.angles
         self.src_rad = data_obj.src_rad
         self.det_rad = data_obj.det_rad
+        self.magn = self.src_rad / (self.src_rad + self.det_rad)
         self.data_struct = data_struct
         self.rec_methods = []
         # %% If we need a data structure, make one:

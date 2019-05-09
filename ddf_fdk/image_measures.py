@@ -29,28 +29,29 @@ def comp_rSegErr(S, S_GT):
     err = np.linalg.norm(np.ravel(S) * 1 - np.ravel(S_GT) * 1, 1) / np.size(S)
     return err
 
-def comp_outer_reg(X, vox):
+def comp_outer_reg(X):
+    vox = np.size(X, 0)
     out_reg = sp.binary_dilation(np.asarray(X), iterations=vox // 16)
     return sp.binary_erosion(np.asarray(out_reg), iterations=vox // 16)
     
 def comp_porosity(X):
-    vox = np.size(X)
-    fig = comp_outer_reg(np.asarray(X) * 1, vox)
+    fig = comp_outer_reg(np.asarray(X) * 1)
     fig = np.invert(fig) * 2 + np.invert(np.asarray(X) * 1)
     return porosity(fig)
     
-def pore_size_distr(seg, bin_size, number_bins=10, show_particles=False):
+def pore_size_distr(seg, mask, bin_size, number_bins=10, show_particles=False):
     part_count = np.zeros((number_bins))
     mid = np.size(seg, 0) // 2
     label_array = np.zeros((np.shape(seg)))
-    a = np.invert(np.asarray(seg))
+    a = np.invert(np.asarray(seg)) * mask
     for i in range(number_bins):
         label_array, part_count[i] = ndimage.measurements.label(a)
+        
         a = sp.binary_erosion(np.asarray(a), iterations=bin_size)
         if show_particles:
             pylab.figure()
             pylab.imshow(label_array[:, :, mid])        
-        if part_count[i] <=2:
+        if part_count[i] <= 1:
             print('No larger objects anymore')
             break
         

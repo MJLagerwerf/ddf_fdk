@@ -36,18 +36,22 @@ class real_data:
         self.angles = g_vec.shape[0]
         self.src_rad = src_rad
         self.det_rad = det_rad
+        self.magn = self.src_rad / (self.src_rad + self.det_rad)
         self.dpix = [np.size(g_vec, 1), np.size(g_vec, 2)]
         self.voxels = [self.dpix[1], self.dpix[1], self.dpix[1]]
         u_size = self.dpix[0] * pix_size / 2
         v_size = self.dpix[1] * pix_size / 2
         self.detecsize = np.array([u_size, v_size])
-        self.volumesize = np.array([self.detecsize[1], self.detecsize[1],
-                                    self.detecsize[1]], dtype='float32')
+        self.volumesize = np.array([self.detecsize[1] * self.magn,
+                                    self.detecsize[1] * self.magn,
+                                    self.detecsize[1] * self.magn],
+                                    dtype='float32')
         # %%
         # Make the reconstruction space
         self.reco_space = odl.uniform_discr(min_pt=-self.volumesize,
-                                       max_pt=self.volumesize,
-                                        shape=self.voxels, dtype='float32')
+                                            max_pt=self.volumesize,
+                                            shape=self.voxels,
+                                            dtype='float32')
         if 'ground_truth' in dataset:
             self.f = self.reco_space.element(np.load(dataset['ground_truth']))
             self.mask_name = dataset['mask']

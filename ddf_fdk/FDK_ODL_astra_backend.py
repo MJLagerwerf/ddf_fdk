@@ -12,8 +12,9 @@ def FDK_astra(g, filt, geom, ang_freq=None):
     # %% Create geometry
     # Make a circular scanning geometry
     ang, u, v = g.shape
-    minvox = geom.detector.partition.min_pt[1]
-    maxvox = geom.detector.partition.max_pt[1]
+    magn = geom.src_radius / (geom.src_radius + geom.det_radius)
+    minvox = geom.detector.partition.min_pt[1] * magn
+    maxvox = geom.detector.partition.max_pt[1] * magn
     vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
                                      minvox, maxvox)
     w_du, w_dv = (geom.detector.partition.max_pt \
@@ -23,6 +24,7 @@ def FDK_astra(g, filt, geom, ang_freq=None):
                              500, False)[::ang_freq]
     else:
         angles = np.linspace(np.pi/ang, (2 + 1 / ang) * np.pi, ang, False)
+
     proj_geom = astra.create_proj_geom('cone', w_du, w_dv, v, u,
                                        angles, geom.src_radius, geom.det_radius)
     g = np.transpose(np.asarray(g.copy()), (2, 0, 1))

@@ -13,6 +13,7 @@ import pylab
 import pyfftw
 import time
 import os
+import re
 import shutil
 from tempfile import mkstemp
 from scipy.ndimage import gaussian_filter
@@ -78,6 +79,7 @@ class ConvolutionOp(odl.Operator):
         self.a_wc = a_wc
         self.w_detv = w_detv
 #        self.rs_filt.domain.weighting.const
+
         self.det_tr_space = odl.uniform_discr([det_space.min_pt[1],
                                                det_space.min_pt[0]],
                                                 [det_space.max_pt[1],
@@ -359,7 +361,7 @@ def load_part_counts(path, nMeth, nExp, files, spec, spec_var, bin_size,
         i = 0
         for f in files:
             Q[:, :, i] = np.load(path + str(f) + '/' + spec + str(spec_var[i]) 
-                        + '_pore_dist.npy')
+                        + 'part_count.npy')
             i += 1
         for i1 in range(nMeth):
             for i2 in range(nExp):
@@ -442,4 +444,4 @@ def get_axis(volume):
     mid = np.size(volume, 0) // 2
     return [volume[:, :, mid], volume[:, mid, :], volume[mid, :, :]]
 
-        
+
