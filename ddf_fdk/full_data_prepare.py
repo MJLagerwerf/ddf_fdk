@@ -8,14 +8,45 @@ Created on Thu May  9 10:55:46 2019
 
 import numpy as np
 import scipy.ndimage as sp
+import scipy.interpolate as si
 import astra
-#from  scipy.ndimage.measurements import center_of_mass
+
 import gc
 import time
 import os
 import re
 
 from . import read_experimental_data as red
+# %%
+def load_and_preprocess_real_data(path, dset, sc, redo=False, zoom=False):
+    preprocess_data(path, dset, sc, redo)
+    proc_path = path + 'processed_data/'
+    if sc == 1:
+        if not (os.path.exists(proc_path + 'ground_truth.npy') and \
+            os.path.exists(proc_path + 'mask.npy')) or redo:
+            print('Computing mask and ground truth for this dataset')
+            make_golden_standard_and_mask(path, sc, zoom)
+        else:
+            print('Already computed mask and ground truth for this dataset')
+
+        dataset = {'g' : proc_path + 'g_'+ dset + '.npy',
+                   'ground_truth' : proc_path + 'ground_truth.npy',
+                   'mask' : proc_path + 'mask.npy'}   
+    else:
+        if not (os.path.exists(proc_path + 'ground_truth_sc' + str(sc) + \
+                               '.npy') and os.path.exists(proc_path + \
+                                     'mask_sc' +str(sc) +'.npy')) or redo:
+            print('Computing mask and ground truth for this dataset')
+            make_golden_standard_and_mask(path, sc, zoom)
+        else:
+            print('Already computed mask and ground truth for this dataset')
+            
+        dataset = {'g' : proc_path + 'g_' + dset + '_sc' + str(sc) + '.npy',
+                   'ground_truth' : proc_path + 'ground_truth_sc' + str(sc) + \
+                   '.npy',
+                   'mask' : proc_path + 'mask_sc' + str(sc) + '.npy'}
+    return dataset
+
 # %%
 def load_meta(load_path, sc):
     meta = {}
@@ -54,7 +85,6 @@ def find_center(P_a, meta):
         COR = np.arange(midpoint - 10 * precision[i], midpoint + 10 * precision[i],
                         precision[i])
         M = np.zeros(len(COR))
-        print(midpoint)
         for j in range(len(COR)):
             gamma = np.arctan(det_space_u / s2d)
             gamma_c = np.arctan(COR[j] / s2d)
@@ -66,7 +96,7 @@ def find_center(P_a, meta):
             s2t = np.tile(s2, (N_a, 1))
             ang = (np.tile(angles, (N_u, 1)).T + np.tile(beta, (N_a, 1))) \
                         % (2 * np.pi)
-            IO = sp.RegularGridInterpolator((angles, det_space_u), P_a, 
+            IO = si.RegularGridInterpolator((angles, det_space_u), P_a, 
                                             bounds_error=False, fill_value=None)
             P_ab = np.reshape(IO(np.concatenate([[ang.ravel(),], [s2t.ravel(),]],
                                                   axis=0).T), (N_a, N_u))
@@ -77,7 +107,7 @@ def find_center(P_a, meta):
     
     return midpoint * -s2o / s2d
 # %%
-def preprocess_data(path, dset, sc=1):
+def preprocess_data(path, dset, sc, redo):
     start = time.time()
     
     proc_path = path + 'processed_data/'
@@ -89,8 +119,8 @@ def preprocess_data(path, dset, sc=1):
         save_path = proc_path + 'g_' + dset
     else:
         save_path = proc_path + 'g_' + dset + '_sc' + str(sc)
-    if not os.path.exists(save_path + '.npy'):
-        meta = load_meta(path + dset, sc)
+    if not os.path.exists(save_path + '.npy') or redo:
+        meta = load_meta(path + dset + '/', sc)
         sampling = [sc, sc]
         dark = red.read_raw(path + dset, 'di', sample=sampling)
         flat = red.read_raw(path + dset, 'io', sample=sampling)
@@ -132,7 +162,7 @@ def preprocess_data(path, dset, sc=1):
         print('Already have a preprocessed g for this case')
 
 
-def make_golden_standard_and_mask(path, sc=1):
+def make_golden_standard_and_mask(path, sc=1, zoom=False):
     # %%
     start = time.time()
     proc_path = path + 'processed_data/'
@@ -149,7 +179,10 @@ def make_golden_standard_and_mask(path, sc=1):
     s2d = meta['s2d']
     s2o = meta['s2o']
     o2d = meta['o2d']
-    magn = s2o / s2d
+    if zoom:
+        magn = 1
+    else:
+        magn = s2o / s2d
     vox_size = dpixsize * magn
     minsize = -vox * vox_size / 2 
     maxsize = vox * vox_size / 2 

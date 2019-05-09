@@ -8,13 +8,12 @@ Created on Mon Sep  3 14:29:41 2018
 import numpy as np
 import astra
 
-def FDK_astra(g, filt, geom, ang_freq=None):
+def FDK_astra(g, filt, geom, reco_space, ang_freq=None):
     # %% Create geometry
     # Make a circular scanning geometry
     ang, u, v = g.shape
-    magn = geom.src_radius / (geom.src_radius + geom.det_radius)
-    minvox = geom.detector.partition.min_pt[1] * magn
-    maxvox = geom.detector.partition.max_pt[1] * magn
+    minvox = reco_space.min_pt[0]
+    maxvox = reco_space.max_pt[0]
     vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
                                      minvox, maxvox)
     w_du, w_dv = (geom.detector.partition.max_pt \

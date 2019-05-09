@@ -35,10 +35,8 @@ def cfg():
     # Create a data object
     # The amount of projection angles in the measurements
     if ntype[it_i] == 'good':
-        angles = 2000
         ang_freq = 32
     elif ntype[it_i] == 'noisy':
-        angles = 500
         ang_freq = 1
 
     # Source to center of rotation radius
@@ -53,9 +51,10 @@ def cfg():
 
 # %%
 @ex.capture
-def CT(dataset, pix_size, src_rad, det_rad, angles, ang_freq):
-    data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, angles,
-                             ang_freq)
+def CT(dataset, pix_size, src_rad, det_rad, ang_freq):
+    # Adding zoom=True, to get the 'incorrect' type of magnification
+    data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad,
+                             ang_freq, zoom=True)
   
     # %% Create the circular cone beam CT class
     CT_obj = ddf.CCB_CT(data_obj)

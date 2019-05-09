@@ -37,23 +37,27 @@ noise = None#['Poisson', 2 ** 10]
 # Noise model
 # Options: None,  ['Gaussian', %intensity], ['Poisson', I_0], ['loaded data',
 #                    filename]
+sc = 8
+zoom = True
+lp = '/export/scratch2/lagerwer/data/FleXray/pomegranate1_02MAR/' 
+dset = 'good'
+dataset = ddf.load_and_preprocess_real_data(lp, dset, sc=sc, zoom=zoom, redo=True)
 
-lp = '/export/scratch2/lagerwer/data/FleXray/walnuts_02MAY/walnut_01/' 
-dset = 'good/'
-proc_dat = 'processed_data/'
-dataset = {'g' : lp + proc_dat +  'g_good_sc4_shift.npy'}#,
+#proc_dat = 'processed_data/'
+#dataset = {'g' : lp + proc_dat +  'g_good_sc4_shift.npy'}#,
 #               'ground_truth' : lp + 'ground_truth_sc4.npy',
 #                'mask' : lp + 'mask_sc4.npy'}
-angles = 500
-ang_freq = 1
 
-meta = ddf.load_meta(lp + dset, sc=6)
-src_rad = meta['s2o']
+ang_freq = 8
+# %%
+meta = ddf.load_meta(lp + dset + '/', sc=sc)
+src_rad = meta['s2o'] 
 det_rad = meta['o2d']
 pix_size = meta['pix_size']
 # Create a data object
 #data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
-data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, angles, ang_freq)
+data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,
+                         zoom=zoom)
 # Expansion operator and binnin parameter
 #expansion_op = 'linear'
 #bin_param = 2
@@ -65,11 +69,14 @@ case.init_algo()
 #case.init_DDF_FDK()
 # %%
 #case.TFDK.optim_param(4, 100)
-case.FDK.do('Ram-Lak')#, compute_results='no')
+case.FDK.do('Ram-Lak')
+case.SIRT.do(1)
 #rec.show()
-case.FDK.show(clim=[0, 1])
 #case.TFDK.do('optim')
 
-# %% Check convolution
-#case.FDK.show()
+# %% Show results
+case.show_phantom()
+case.FDK.show()
+case.SIRT.show()
+case.table()
 

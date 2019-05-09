@@ -11,11 +11,12 @@ import astra
 import numpy as np
 import time
 # %%
-def SIRT_astra(g, niter, geom, WV_path, non_neg=False, ang_freq=None):
+def SIRT_astra(g, niter, geom, reco_space, WV_path, non_neg=False,
+               ang_freq=None):
     # %%
     ang, u, v = g.shape
-    minvox = geom.detector.partition.min_pt[1]
-    maxvox = geom.detector.partition.max_pt[1]
+    minvox = reco_space.min_pt[0]
+    maxvox = reco_space.max_pt[0]
     vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
                                      minvox, maxvox)
     w_du, w_dv = (geom.detector.partition.max_pt \

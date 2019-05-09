@@ -183,7 +183,8 @@ class FDK_class(algorithm_class):
         if backend == 'ASTRA':
             rec = self.CT_obj.reco_space.element(
                     FDK_meth.FDK_astra(self.CT_obj.g, hf,
-                                       self.CT_obj.geometry))
+                                       self.CT_obj.geometry,
+                                       self.CT_obj.reco_space))
         else:
             rec = self.FDK_hf(hf)
         t_rec = time.time() - t
@@ -237,6 +238,7 @@ class SIRT_class(algorithm_class):
     def do(self, niter, compute_results='yes', measures=['MSR', 'MAE', 'SSIM']):
         rec, t_rec = SIRT_meth.SIRT_astra(self.CT_obj.g, niter,
                                           self.CT_obj.geometry,
+                                          self.CT_obj.reco_space,
                                           self.CT_obj.WV_path,
                                           self.non_neg)
         

@@ -12,15 +12,16 @@ import odl
 import scipy.ndimage.morphology as sp
 import gc
 class real_data:
-    def __init__(self, dataset, pix_size, src_rad, det_rad, angles, ang_freq):
+    def __init__(self, dataset, pix_size, src_rad, det_rad, ang_freq,
+                 zoom=False):
         self.data_type = 'real'
         # %% load data
-        self.angles_in = angles
         self.ang_freq = ang_freq
         self.dataset = dataset
         if type(dataset) == dict:
             g_vec = np.load(dataset['g'])
             # %% adapt data
+            self.angles_in = np.shape(g_vec)[0]
             g_vec = g_vec[::ang_freq, :, :]
     
             rs_detu = np.size(g_vec, 2) * 2
@@ -36,7 +37,10 @@ class real_data:
         self.angles = g_vec.shape[0]
         self.src_rad = src_rad
         self.det_rad = det_rad
-        self.magn = self.src_rad / (self.src_rad + self.det_rad)
+        if zoom:
+            self.magn = 1 
+        else:
+            self.magn = self.src_rad / (self.src_rad + self.det_rad)
         self.dpix = [np.size(g_vec, 1), np.size(g_vec, 2)]
         self.voxels = [self.dpix[1], self.dpix[1], self.dpix[1]]
         u_size = self.dpix[0] * pix_size / 2
