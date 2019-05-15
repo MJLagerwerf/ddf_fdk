@@ -40,6 +40,7 @@ filts = [x1, x2, 'Ram-Lak', 'Shepp-Logan', ['Gauss', 8], ['Gauss', 5],
          ['Bin', 2], ['Bin', 5]]
 
 MTF_list = ddf.MTF_x(filts, voxels, angles, src_rad, det_rad)
+
 np.save(path_base + 'MTF_list', MTF_list)
 # %%
 pylab.close('all')
@@ -47,7 +48,7 @@ pylab.rcParams.update({'font.size': 20})
 pylab.rc('text', usetex=True)
 fig, (ax2) = pylab.subplots(1, 1, figsize=[13.5, 8])
 
-RM = ['T-filter$^1$','T-filter$^2$', 'Ram-Lak', 'Shepp-Logan', 
+RM = ['MR filter^{Noi, 1}$','MR filter$^{Noi,2}$', 'Ram-Lak', 'Shepp-Logan', 
         'SL + Gauss$_{\sigma=8}$', 'SL + Gauss$_{\sigma=5}$',
         'SL + Bin$_{N=2}$', 'SL + Bin$_{N=5}$']
 clr = ['C3', 'C3', 'gold', 'C2', 'C1', 'C6', 'C9', 'C4']

@@ -25,7 +25,8 @@ requirements = [
 	'pyfftw',
 	'scikit-image',
 	'tabulate',
-	'matplotlib'
+	'matplotlib',
+	'tqdm'
     # Add your project's requirements here, e.g.,
     # 'tables==3.4.4',
 ]

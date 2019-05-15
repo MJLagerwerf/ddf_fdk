@@ -85,6 +85,7 @@ def find_center(P_a, meta):
         COR = np.arange(midpoint - 10 * precision[i], midpoint + 10 * precision[i],
                         precision[i])
         M = np.zeros(len(COR))
+        print(midpoint)
         for j in range(len(COR)):
             gamma = np.arctan(det_space_u / s2d)
             gamma_c = np.arctan(COR[j] / s2d)
@@ -105,7 +106,7 @@ def find_center(P_a, meta):
             
         midpoint = COR[np.argmin(M)]
     
-    return midpoint * -s2o / s2d
+    return midpoint * -s2o / s2d / pix_size
 # %%
 def preprocess_data(path, dset, sc, redo):
     start = time.time()
@@ -146,14 +147,21 @@ def preprocess_data(path, dset, sc, redo):
 #        d_COR = center_of_mass(proj ** 2)[2] - proj.shape[2]/2 ! ! ! Outdated
         mid_v = proj.shape[1] // 2
         center_slice = proj[:, mid_v, :]
+        
         d_COR = find_center(center_slice, meta)
-        
-        proj = sp.shift(proj, [0, 0, 2 * d_COR], mode='nearest')
-        
+        print('Center of rotation wrt the current center', d_COR)
+        if np.abs(d_COR) > 0.5:
+            proj = sp.shift(proj, [0, 0, d_COR], mode='nearest')
+            center_slice = proj[:, mid_v, :]
+            d_COR = find_center(center_slice, meta)
+            print('Center of rotation wrt the current center', d_COR)
+        else:
+            print('Shift is smaller than half a pixel')
+            pass
         # Transpose of the detector to fit the input format and turn it 180 degrees
         proj = np.transpose(proj, (0, 2, 1))
         proj = proj[:,:, ::-1]
-        
+
         # Save the vector
         np.save(save_path, proj)
     

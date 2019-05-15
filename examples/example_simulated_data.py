@@ -37,18 +37,18 @@ noise = None#['Poisson', 2 ** 10]
 # Noise model
 # Options: None,  ['Gaussian', %intensity], ['Poisson', I_0], ['loaded data',
 #                    filename]
-sc = 8
-zoom = True
-lp = '/export/scratch2/lagerwer/data/FleXray/pomegranate1_02MAR/' 
+sc = 4
+zoom = False
+lp = '/export/scratch2/lagerwer/data/FleXray/walnuts_10MAY/walnut_11/' 
 dset = 'good'
-dataset = ddf.load_and_preprocess_real_data(lp, dset, sc=sc, zoom=zoom, redo=True)
+dataset = ddf.load_and_preprocess_real_data(lp, dset, sc=sc)
 
 #proc_dat = 'processed_data/'
 #dataset = {'g' : lp + proc_dat +  'g_good_sc4_shift.npy'}#,
 #               'ground_truth' : lp + 'ground_truth_sc4.npy',
 #                'mask' : lp + 'mask_sc4.npy'}
 
-ang_freq = 8
+ang_freq = 1
 # %%
 meta = ddf.load_meta(lp + dset + '/', sc=sc)
 src_rad = meta['s2o'] 
@@ -70,13 +70,13 @@ case.init_algo()
 # %%
 #case.TFDK.optim_param(4, 100)
 case.FDK.do('Ram-Lak')
-case.SIRT.do(1)
+#case.SIRT.do(1)
 #rec.show()
 #case.TFDK.do('optim')
 
 # %% Show results
 case.show_phantom()
 case.FDK.show()
-case.SIRT.show()
+#case.SIRT.show(1)
 case.table()
 
