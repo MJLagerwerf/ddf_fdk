@@ -52,7 +52,7 @@ def clip_cylinder(size, img):
 class phantom:
     def __init__(self, voxels, PH, angles, noise, src_rad, det_rad, **kwargs):
         self.data_type = 'simulated'
-        voxels_up = [int(v * 1.5) for v in voxels]
+        voxels_up = [int(v * 2) for v in voxels]
         self.voxels = voxels
         self.PH = PH
         self.angles = angles
@@ -110,8 +110,9 @@ class phantom:
 
 # %% Generate data and 
     def generate_data(self, voxels_up, reco_space_up, f_up, **kwargs):
-        dpix_up = [voxels_up[0], voxels_up[1]]
-        dpix = [int(2 * self.voxels[0]), self.voxels[0]]
+        factor = 2
+        dpix_up = [factor * voxels_up[0], voxels_up[1]]
+        dpix = [int(factor * self.voxels[0]), self.voxels[0]]
         src_radius = self.src_rad * self.volumesize[0] * 2
         det_radius = self.det_rad * self.volumesize[0] * 2
         # Make a circular scanning geometry

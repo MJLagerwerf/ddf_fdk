@@ -176,11 +176,11 @@ class FDK_class(algorithm_class):
         weight = 1 / 2 / self.CT_obj.w_detu
         return (filt * weight)
 
-    def do(self, filt_type, compute_results='yes',
-           measures=['MSR', 'MAE', 'SSIM'], backend='ASTRA'):
+    def do(self, filt_type, compute_results=True,
+           measures=['MSR', 'MAE', 'SSIM'], astra=True):
         t = time.time()
         hf = self.FDK_filt(filt_type)
-        if backend == 'ASTRA':
+        if astra:
             rec = self.CT_obj.reco_space.element(
                     FDK_meth.FDK_astra(self.CT_obj.g, hf,
                                        self.CT_obj.geometry,
@@ -188,24 +188,24 @@ class FDK_class(algorithm_class):
         else:
             rec = self.FDK_hf(hf)
         t_rec = time.time() - t
-        if compute_results == 'yes':
+        if compute_results:
             self.comp_results(rec, measures, hf, filt_type, t_rec)
         else:
             return rec
 
-    def filt_inp_do(self, h, filt_name, compute_results='yes',
+    def filt_inp_do(self, h, filt_name, compute_results=True,
                     measures=['MSR', 'MAE', 'SSIM']):
         t = time.time()
         rec = self.CT_obj.FDK_op(h)
         t_rec = time.time() - t
-        if compute_results == 'yes':
+        if compute_results:
             self.comp_results(rec, measures, h, filt_name, t_rec)
             rec = None
             gc.collect()
         else:
             return rec
 
-    def filt_LP(self, base_filt, LP_filt, compute_results='yes',
+    def filt_LP(self, base_filt, LP_filt, compute_results=True,
                     measures=['MSR', 'MAE', 'SSIM']):
         t = time.time()
         hf = self.FDK_filt(base_filt)
@@ -214,7 +214,7 @@ class FDK_class(algorithm_class):
         rec = self.CT_obj.FDK_op(h)
         t_rec = time.time() - t
         
-        if compute_results == 'yes':
+        if compute_results:
             self.comp_results(rec, measures, h, base_filt + ' + ' + LP_filt[0]
                                 + str(LP_filt[1]), t_rec)
         else:
@@ -235,7 +235,7 @@ class SIRT_class(algorithm_class):
             self.method = 'SIRT'
         self.non_neg = non_neg
 
-    def do(self, niter, compute_results='yes', measures=['MSR', 'MAE', 'SSIM']):
+    def do(self, niter, compute_results=True, measures=['MSR', 'MAE', 'SSIM']):
         rec, t_rec = SIRT_meth.SIRT_astra(self.CT_obj.g, niter,
                                           self.CT_obj.geometry,
                                           self.CT_obj.reco_space,
@@ -249,7 +249,7 @@ class SIRT_class(algorithm_class):
                 rec_arr = self.CT_obj.reco_space.element(np.load(
                                 self.CT_obj.WV_path + rec[i]))
                 
-                if compute_results == 'yes':
+                if compute_results:
                     self.comp_results(rec_arr, measures, niter[i],
                                       'i=' + str(niter[i]), t_rec[i])
                 else:
@@ -259,7 +259,7 @@ class SIRT_class(algorithm_class):
         else:
             rec_arr = self.CT_obj.reco_space.element(np.load(
                             self.CT_obj.WV_path + rec))
-            if compute_results == 'yes':
+            if compute_results:
                 self.comp_results(rec_arr, measures, niter, 'i=' + str(niter),
                               t_rec)
             else:
@@ -289,14 +289,14 @@ class LSFDK_class(AFFDK_class):
     def comp_results(self, rec, measures, var, param, t_rec):
         self.results = results(self, rec, measures, var, param, t_rec)
 
-    def do(self, measures=['MSR', 'MAE', 'SSIM'], compute_results='yes'):
+    def do(self, measures=['MSR', 'MAE', 'SSIM'], compute_results=True):
         t = time.time()
         self.CT_obj.Matrix_Comp_A()
         x = self.CT_obj.Exp_op.domain.element(
                 np.linalg.solve(self.CT_obj.AtA, self.CT_obj.Atg))
         rec = self.CT_obj.FDK_bin(x)
         t_rec = time.time() - t
-        if compute_results == 'yes':
+        if compute_results:
             self.comp_results(rec, measures, x, ' ', t_rec)
         else:
             return rec
@@ -307,7 +307,7 @@ class TFDK_class(AFFDK_class):
         self.CT_obj = CT_obj
         self.method = 'T-FDK'
 
-    def do(self, lam, measures=['MSR', 'MAE', 'SSIM'], compute_results='yes'):
+    def do(self, lam, measures=['MSR', 'MAE', 'SSIM'], compute_results=True):
         t = time.time()
         self.CT_obj.Matrix_Comp_A()
         if lam == 'optim':
@@ -322,7 +322,7 @@ class TFDK_class(AFFDK_class):
                 np.linalg.solve(self.CT_obj.AtA + lamI, self.CT_obj.Atg))
         rec = self.CT_obj.FDK_bin(x)
         t_rec = time.time() - t
-        if compute_results == 'yes':
+        if compute_results:
             self.comp_results(rec, measures, x, 'lam=' + str(lam), t_rec)
         else:
             return rec
@@ -381,7 +381,7 @@ class SFDK_class(AFFDK_class):
         self.CT_obj = CT_obj
         self.method = 'S-FDK'
 
-    def do(self, lam, measures=['MSR', 'MAE', 'SSIM'], compute_results='yes'):
+    def do(self, lam, measures=['MSR', 'MAE', 'SSIM'], compute_results=True):
         t = time.time()
         self.CT_obj.Matrix_Comp_A()
         self.CT_obj.Matrix_Comp_C()
@@ -397,7 +397,7 @@ class SFDK_class(AFFDK_class):
                 np.linalg.solve(self.CT_obj.AtA + lamC, self.CT_obj.Atg))
         rec = self.CT_obj.FDK_bin(x)
         t_rec = time.time() - t 
-        if compute_results == 'yes':
+        if compute_results:
             self.comp_results(rec, measures, x, 'lam=' + str(lam), t_rec)
         else:
             return rec

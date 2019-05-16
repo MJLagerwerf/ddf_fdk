@@ -44,7 +44,8 @@ class CCB_CT:
         # Make the reconstruction space
         self.reco_space = self.phantom.reco_space
         voxels = self.phantom.voxels
-        dpix = [int(2 * voxels[0]), voxels[1]]
+        factor = 2
+        dpix = [int(factor * voxels[0]), voxels[1]]
         self.w_detu = (2 * self.phantom.detecsize[0]) / dpix[0]
         self.w_detv = (2 * self.phantom.detecsize[1]) / dpix[1]
         if self.phantom.data_type == 'simulated':
