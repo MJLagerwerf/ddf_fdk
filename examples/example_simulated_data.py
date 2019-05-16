@@ -78,5 +78,5 @@ case.FDK.do('Ram-Lak')
 case.show_phantom()
 case.FDK.show()
 #case.SIRT.show(1)
-case.table()
+
 
