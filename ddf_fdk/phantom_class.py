@@ -52,7 +52,7 @@ def clip_cylinder(size, img):
 class phantom:
     def __init__(self, voxels, PH, angles, noise, src_rad, det_rad, **kwargs):
         self.data_type = 'simulated'
-        voxels_up = [int(v * 2) for v in voxels]
+        voxels_up = [int(v * 1.5) for v in voxels]
         self.voxels = voxels
         self.PH = PH
         self.angles = angles
