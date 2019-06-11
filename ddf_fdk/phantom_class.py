@@ -12,7 +12,7 @@ import scipy.ndimage.morphology as sp
 from . import phantom_objects as po
 from . import support_functions as sup
 import gc
-#import AFFDK.threeshape3D as ts3d
+
 # %%
 def make_spheres(center, radius, value=-1):
     rad = [radius, radius, radius]
@@ -59,6 +59,9 @@ class phantom:
         self.noise = noise
         self.src_rad = src_rad
         self.det_rad = det_rad
+        if self.PH == 'Zero' and self.noise == None:
+            raise ValueError('Specify a noise level for this phantom')
+            
         if 'load_data_g' in kwargs:
             if PH in ['Fourshape', 'Threeshape']:
                 if 'load_data_f' not in kwargs:
@@ -74,7 +77,7 @@ class phantom:
             self.reco_space, self.f = self.phantom_creation(voxels, 
                                                             second=True,
                                                             **kwargs)
-                
+        
     def make_mask(self, WV_path):
         self.WV_path = WV_path
         if self.PH in ['Threeshape', 'Fourshape', '22 Ellipses',
@@ -381,6 +384,8 @@ class phantom:
                                                         max_pt=[3.5, 3.5, 3.5])
                 f = phantom / np.max(phantom) * .22
             clip_cylinder(voxels[0], f)
+            if 'second' in kwargs:
+                np.random.set_state(seed_old)
             return reco_space, f
 
         elif self.PH == 'Threeshape':               
@@ -418,6 +423,8 @@ class phantom:
                     f[:, :, i] = f2d
 
                 clip_cylinder(voxels[0], f)
+                if 'second' in kwargs:
+                    np.random.set_state(seed_old)
             return reco_space, f
         
         elif self.PH == 'Fourshape':

@@ -15,12 +15,34 @@ import time
 import os
 import re
 import shutil
+import subprocess
+import astra
 from tempfile import mkstemp
 from scipy.ndimage import gaussian_filter
 
 from .phantom_class import phantom
 from . import CCB_CT_class as CT
 from . import image_measures as im
+# %%
+def import_astra_GPU():
+    sp = subprocess.Popen(['nvidia-smi', '-q'],
+                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out_str = sp.communicate()
+    out_list = out_str[0].decode("utf-8").split('\n')
+    out_dict = {}
+    
+    for item in out_list:
+        try:
+            key, val = item.split(':')
+            key, val = key.strip(), val.strip()
+            out_dict[key] = val
+        except:
+            pass
+    num_gpu = int(out_dict['Attached GPUs'])
+    astra.set_gpu_index(*[i for i in range(num_gpu)])
+    print('Using ' + str(num_gpu) + ' GPUs')
+
+
 # %% Working vars function
 class working_var_map:
     def __init__(self):

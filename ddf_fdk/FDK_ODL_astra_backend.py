@@ -7,6 +7,8 @@ Created on Mon Sep  3 14:29:41 2018
 """
 import numpy as np
 import astra
+from . import support_functions as sup
+sup.import_astra_GPU()
 
 def FDK_astra(g, filt, geom, reco_space, ang_freq=None):
     # %% Create geometry

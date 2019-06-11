@@ -22,12 +22,14 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'Foam'
+phantom = 'Shepp-Logan'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
 noise = None#['Poisson', 2 ** 10]
-
+det_rad = 0
+src_rad = 10
+angles = 180
 # The amount of projection angles in the measurements
 
 # Source to center of rotation radius
@@ -37,27 +39,27 @@ noise = None#['Poisson', 2 ** 10]
 # Noise model
 # Options: None,  ['Gaussian', %intensity], ['Poisson', I_0], ['loaded data',
 #                    filename]
-sc = 4
-zoom = False
-lp = '/export/scratch2/lagerwer/data/FleXray/walnuts_10MAY/walnut_11/' 
-dset = 'good'
-dataset = ddf.load_and_preprocess_real_data(lp, dset, sc=sc)
-
-#proc_dat = 'processed_data/'
-#dataset = {'g' : lp + proc_dat +  'g_good_sc4_shift.npy'}#,
-#               'ground_truth' : lp + 'ground_truth_sc4.npy',
-#                'mask' : lp + 'mask_sc4.npy'}
-
-ang_freq = 1
-# %%
-meta = ddf.load_meta(lp + dset + '/', sc=sc)
-src_rad = meta['s2o'] 
-det_rad = meta['o2d']
-pix_size = meta['pix_size']
+#sc = 1
+#zoom = False
+#lp = '/export/scratch2/lagerwer/data/FleXray/walnuts_10MAY/walnut_11/' 
+#dset = 'noisy'
+#dataset = ddf.load_and_preprocess_real_data(lp, dset, sc=sc)
+##
+##proc_dat = 'processed_data/'
+##dataset = {'g' : lp + proc_dat +  'g_good_sc4_shift.npy'}#,
+##               'ground_truth' : lp + 'ground_truth_sc4.npy',
+##                'mask' : lp + 'mask_sc4.npy'}
+#
+#ang_freq = 1
+### %%
+#meta = ddf.load_meta(lp + dset + '/', sc=sc)
+#src_rad = meta['s2o'] 
+#det_rad = meta['o2d']
+#pix_size = meta['pix_size']
 # Create a data object
-#data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
-data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,
-                         zoom=zoom)
+data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
+#data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,
+#                         zoom=zoom)
 # Expansion operator and binnin parameter
 #expansion_op = 'linear'
 #bin_param = 2
@@ -75,8 +77,7 @@ case.FDK.do('Ram-Lak')
 #case.TFDK.do('optim')
 
 # %% Show results
-case.show_phantom()
-case.FDK.show()
+case.table()
 #case.SIRT.show(1)
 
 

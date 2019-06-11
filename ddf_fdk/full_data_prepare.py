@@ -9,7 +9,6 @@ Created on Thu May  9 10:55:46 2019
 import numpy as np
 import scipy.ndimage as sp
 import scipy.interpolate as si
-import astra
 
 import gc
 import time
@@ -17,6 +16,8 @@ import os
 import re
 
 from . import read_experimental_data as red
+from . import support_functions as sup
+sup.import_astra_GPU()
 # %%
 def load_and_preprocess_real_data(path, dset, sc, redo=False, zoom=False):
     preprocess_data(path, dset, sc, redo)

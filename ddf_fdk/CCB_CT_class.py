@@ -238,13 +238,16 @@ class CCB_CT:
     def table(self, visualize='yes'):
         Ql = []
         # All possible methods
-        headers = ['Method', 'MSR', 'MAE_msk', 'SSIM_msk']
+        headers = ['Method', 'MSE_msk', 'MAE_msk', 'SSIM_msk']
         for m in self.rec_methods:
             if hasattr(m, 'results'):
                 Ql += [i for i in m.results.Ql]
-        self.table_latex = tabulate.tabulate(Ql, headers, tablefmt="latex")
+        self.table_latex = tabulate.tabulate(Ql, headers, tablefmt="latex", 
+                                               floatfmt=('.s',".4e",
+                                                         ".4f", ".4f"))
         if visualize == "yes":
-            print(tabulate.tabulate(Ql, headers, tablefmt="fancy_grid"))
+            print(tabulate.tabulate(Ql, headers, tablefmt="fancy_grid", 
+                                    floatfmt=('.s',".4e", ".4f", ".4f")))
         elif visualize == "no":
             pass
 

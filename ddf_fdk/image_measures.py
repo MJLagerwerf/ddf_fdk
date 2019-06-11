@@ -264,12 +264,13 @@ def MAE(recon, PH, mask='yes'):
     return np.linalg.norm(rec - gt, 1)/(l1_gt)
 
 
-def MSE(recon, PH, mask='yes'):
+def loss(recon, PH, mask='yes'):
     if mask == 'yes':
         rec = np.asarray(PH.mask(recon)).flatten()
+        size = PH.mask_size
     else:
         rec = np.asarray(recon).flatten()
+        size = np.size(rec)
     gt = np.asarray(PH.f).flatten()
-    l2_gt = np.linalg.norm(gt, 2)
-    return np.linalg.norm(rec - gt, 2) ** 2 / (l2_gt**2)
+    return np.linalg.norm(rec - gt, 2) ** 2 / size
 

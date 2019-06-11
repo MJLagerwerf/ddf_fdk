@@ -25,8 +25,9 @@ from . import FDK_ODL_astra_backend as FDK_meth
 def compute_QM(rec, CT_obj, measures):
     if hasattr(CT_obj.phantom, 'f'):
         Q = []
-        if 'MSR' in measures:
-            Q += [im.MSR(CT_obj.FwP(rec), CT_obj.g)]
+        # ! ! ! Not the relative MSE ! ! !
+        if 'MSE' in measures:
+            Q += [im.loss(rec, CT_obj.phantom, mask='yes')]
         else:
             Q += ['na']
         if 'MAE' in measures:
@@ -127,7 +128,7 @@ class algorithm_class:
             pylab.savefig(save_name+extension, bbox_inches='tight')
 
     def table(self):
-        headers = [' ', 'MSR', 'MAE_msk', 'SSIM_msk']
+        headers = [' ', 'MSE', 'MAE_msk', 'SSIM_msk']
         print(tabulate.tabulate(self.results.Ql, headers,
                                 tablefmt="fancy_grid"))
         self.table_latex = tabulate.tabulate(self.results.Ql, headers,
@@ -177,7 +178,7 @@ class FDK_class(algorithm_class):
         return (filt * weight)
 
     def do(self, filt_type, compute_results=True,
-           measures=['MSR', 'MAE', 'SSIM'], astra=True):
+           measures=['MSE', 'MAE', 'SSIM'], astra=True):
         t = time.time()
         hf = self.FDK_filt(filt_type)
         if astra:
@@ -194,7 +195,7 @@ class FDK_class(algorithm_class):
             return rec
 
     def filt_inp_do(self, h, filt_name, compute_results=True,
-                    measures=['MSR', 'MAE', 'SSIM']):
+                    measures=['MSE', 'MAE', 'SSIM']):
         t = time.time()
         rec = self.CT_obj.FDK_op(h)
         t_rec = time.time() - t
@@ -206,7 +207,7 @@ class FDK_class(algorithm_class):
             return rec
 
     def filt_LP(self, base_filt, LP_filt, compute_results=True,
-                    measures=['MSR', 'MAE', 'SSIM']):
+                    measures=['MSE', 'MAE', 'SSIM']):
         t = time.time()
         hf = self.FDK_filt(base_filt)
         h = self.CT_obj.pd_IFFT(hf)
@@ -235,7 +236,7 @@ class SIRT_class(algorithm_class):
             self.method = 'SIRT'
         self.non_neg = non_neg
 
-    def do(self, niter, compute_results=True, measures=['MSR', 'MAE', 'SSIM']):
+    def do(self, niter, compute_results=True, measures=['MSE', 'MAE', 'SSIM']):
         rec, t_rec = SIRT_meth.SIRT_astra(self.CT_obj.g, niter,
                                           self.CT_obj.geometry,
                                           self.CT_obj.reco_space,
@@ -289,7 +290,7 @@ class LSFDK_class(AFFDK_class):
     def comp_results(self, rec, measures, var, param, t_rec):
         self.results = results(self, rec, measures, var, param, t_rec)
 
-    def do(self, measures=['MSR', 'MAE', 'SSIM'], compute_results=True):
+    def do(self, measures=['MSE', 'MAE', 'SSIM'], compute_results=True):
         t = time.time()
         self.CT_obj.Matrix_Comp_A()
         x = self.CT_obj.Exp_op.domain.element(
@@ -307,7 +308,7 @@ class TFDK_class(AFFDK_class):
         self.CT_obj = CT_obj
         self.method = 'T-FDK'
 
-    def do(self, lam, measures=['MSR', 'MAE', 'SSIM'], compute_results=True):
+    def do(self, lam, measures=['MSE', 'MAE', 'SSIM'], compute_results=True):
         t = time.time()
         self.CT_obj.Matrix_Comp_A()
         if lam == 'optim':
@@ -381,7 +382,7 @@ class SFDK_class(AFFDK_class):
         self.CT_obj = CT_obj
         self.method = 'S-FDK'
 
-    def do(self, lam, measures=['MSR', 'MAE', 'SSIM'], compute_results=True):
+    def do(self, lam, measures=['MSE', 'MAE', 'SSIM'], compute_results=True):
         t = time.time()
         self.CT_obj.Matrix_Comp_A()
         self.CT_obj.Matrix_Comp_C()
@@ -475,7 +476,7 @@ class LR_LSFDK_class(LRF_FDK_class):
     def comp_results(self, rec, measures, var, param):
         self.results = results(self, rec, measures, var, param)
 
-    def do(self, measures=['MSR', 'MAE', 'SSIM']):
+    def do(self, measures=['MSE', 'MAE', 'SSIM']):
         self.CT_LR.Matrix_Comp_A()
         x = self.CT_LR.Exp_op.domain.element(
                 np.linalg.solve(self.CT_LR.AtA, self.CT_LR.Atg))
@@ -489,7 +490,7 @@ class LR_TFDK_class(LRF_FDK_class):
         super().__init__(CT_obj)
         self.method = 'LR-T-FDK'
 
-    def do(self, lam, measures=['MSR', 'MAE', 'SSIM']):
+    def do(self, lam, measures=['MSE', 'MAE', 'SSIM']):
         self.CT_LR.Matrix_Comp_A()
         lamI = lam * self.CT_LR.DDC_norm * np.identity(
                 np.shape(self.CT_LR.AtA)[0])
@@ -504,7 +505,7 @@ class LR_SFDK_class(LRF_FDK_class):
         super().__init__(CT_obj)
         self.method = 'LR-S-FDK'
 
-    def do(self, lam, measures=['MSR', 'MAE', 'SSIM']):
+    def do(self, lam, measures=['MSE', 'MAE', 'SSIM']):
         self.CT_LR.Matrix_Comp_A()
         self.CT_LR.Matrix_Comp_C()
         lamC = lam * self.CT_LR.DDC_norm / self.CT_LR.gradFDK_norm * \
