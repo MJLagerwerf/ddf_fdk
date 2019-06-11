@@ -39,7 +39,7 @@ def import_astra_GPU():
         except:
             pass
     num_gpu = int(out_dict['Attached GPUs'])
-    astra.set_gpu_index((*[i for i in range(num_gpu)]))
+    astra.set_gpu_index([i for i in range(num_gpu)])
     print('Using ' + str(num_gpu) + ' GPUs')
 
 
