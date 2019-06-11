@@ -10,8 +10,7 @@ Created on Fri Jan 12 10:01:12 2018
 import astra
 import numpy as np
 import time
-from . import support_functions as sup
-sup.import_astra_GPU()
+
 # %%
 def SIRT_astra(g, niter, geom, reco_space, WV_path, non_neg=False,
                ang_freq=None):

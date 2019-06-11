@@ -9,6 +9,7 @@ Created on Fri Jan 12 09:38:51 2018
 import numpy as np
 import odl
 import scipy.ndimage.morphology as sp
+import astra
 from . import phantom_objects as po
 from . import support_functions as sup
 import gc
@@ -48,7 +49,29 @@ def clip_cylinder(size, img):
     img[:, :, 7 * size // 8:] = 0
     img[outCircle] = 0
 # %%
-        
+def FP_astra(f, reco_space, geom, factor):
+    f = np.asarray(f)
+    v = reco_space.shape[0]
+    u = 2 * v
+    a = geom.angles.size
+    g = np.zeros((v, a, u), dtype='float32')
+    minvox = reco_space.min_pt[0]
+    maxvox = reco_space.max_pt[0]
+    vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
+                                     minvox, maxvox)
+    w_du, w_dv = (geom.detector.partition.max_pt \
+                    -geom.detector.partition.min_pt) / np.array([u,v])
+    
+    ang = np.linspace(np.pi/a, (2 + 1 / a) * np.pi, a, False)
+    
+    proj_geom = astra.create_proj_geom('cone', w_du, w_dv, v, u,
+                                       ang, geom.src_radius, geom.det_radius)
+
+    project_id = astra.create_projector('cuda3d', proj_geom, vol_geom)
+    W = astra.OpTomo(project_id)
+    W.FP(f, out=g)
+    return np.transpose(g, (1, 2, 0))
+
 class phantom:
     def __init__(self, voxels, PH, angles, noise, src_rad, det_rad, **kwargs):
         self.data_type = 'simulated'
@@ -134,9 +157,8 @@ class phantom:
         geometry = odl.tomo.ConeFlatGeometry(
             angle_partition, det_partition, src_radius=src_radius,
                             det_radius=det_radius, axis=[0, 0, 1])
-
-        FP = odl.tomo.RayTransform(reco_space_up, geometry, use_cache=False)
-
+        FP = odl.tomo.RayTransform(reco_space_up, geometry,
+                                              use_cache=False)
         resamp = odl.Resampling(data_space_up, data_space)
         if 'load_data_g' in kwargs:
             if type(kwargs['load_data_g']) == str: 
@@ -144,7 +166,7 @@ class phantom:
             else:
                 self.g = data_space.element(kwargs['load_data_g'])
         else:
-            self.g = resamp(FP(f_up))
+            self.g = resamp(FP(f_up))#resamp(FP_astra(f_up, reco_space_up, geometry, factor))
 
             if self.noise == None:
                 pass
@@ -849,5 +871,6 @@ class phantom:
         else:
             raise ValueError('unknown `Phantom name` ({})'
                              ''.format(self.PH))
+
 
 

@@ -14,10 +14,10 @@ import gc
 import time
 import os
 import re
+import astra
 
 from . import read_experimental_data as red
-from . import support_functions as sup
-sup.import_astra_GPU()
+
 # %%
 def load_and_preprocess_real_data(path, dset, sc, redo=False, zoom=False):
     preprocess_data(path, dset, sc, redo)

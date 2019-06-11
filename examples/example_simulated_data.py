@@ -12,7 +12,7 @@ import ddf_fdk as ddf
 import time
 import pylab
 import scipy.interpolate as sp
-
+ddf.import_astra_GPU()
 pylab.close('all')
 t = time.time()
 # %% Set variables
@@ -58,7 +58,7 @@ angles = 180
 #pix_size = meta['pix_size']
 # Create a data object
 data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
-#data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,
+#data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,)
 #                         zoom=zoom)
 # Expansion operator and binnin parameter
 #expansion_op = 'linear'
@@ -71,7 +71,7 @@ case.init_algo()
 #case.init_DDF_FDK()
 # %%
 #case.TFDK.optim_param(4, 100)
-case.FDK.do('Ram-Lak')
+#case.FDK.do('Ram-Lak')
 #case.SIRT.do(1)
 #rec.show()
 #case.TFDK.do('optim')

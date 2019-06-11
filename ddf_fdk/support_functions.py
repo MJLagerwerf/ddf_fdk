@@ -16,7 +16,6 @@ import os
 import re
 import shutil
 import subprocess
-import astra
 from tempfile import mkstemp
 from scipy.ndimage import gaussian_filter
 
@@ -25,6 +24,7 @@ from . import CCB_CT_class as CT
 from . import image_measures as im
 # %%
 def import_astra_GPU():
+    import astra
     sp = subprocess.Popen(['nvidia-smi', '-q'],
                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out_str = sp.communicate()
@@ -40,7 +40,6 @@ def import_astra_GPU():
             pass
     num_gpu = int(out_dict['Attached GPUs'])
     astra.set_gpu_index([i for i in range(num_gpu)])
-    print('Using ' + str(num_gpu) + ' GPUs')
 
 
 # %% Working vars function
