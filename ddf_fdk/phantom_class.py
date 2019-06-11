@@ -70,6 +70,7 @@ def FP_astra(f, reco_space, geom, factor):
     project_id = astra.create_projector('cuda3d', proj_geom, vol_geom)
     W = astra.OpTomo(project_id)
     W.FP(f, out=g)
+    astra.data3d.delete(project_id)
     return np.transpose(g, (1, 2, 0))
 
 class phantom:

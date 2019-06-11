@@ -8,11 +8,11 @@ Created on Wed Mar 28 11:40:55 2018
 import odl
 import numpy as np
 import ddf_fdk as ddf
+ddf.import_astra_GPU()
 #import real_data_class as RD
 import time
 import pylab
 import scipy.interpolate as sp
-ddf.import_astra_GPU()
 pylab.close('all')
 t = time.time()
 # %% Set variables
