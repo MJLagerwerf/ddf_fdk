@@ -145,8 +145,8 @@ class phantom:
         # Make a circular scanning geometry
         angle_partition = odl.uniform_partition(0, 2 * np.pi, self.angles)
         # Make a flat detector space
-        det_partition = odl.uniform_partition(-self.detecsize,
-                                               self.detecsize, dpix_up)
+        det_partition_up = odl.uniform_partition(-self.detecsize,
+                                                 self.detecsize, dpix_up)
         # Create data_space_up and data_space
         data_space = odl.uniform_discr((0, *-self.detecsize),
                                        (2 * np.pi, *self.detecsize),
@@ -156,7 +156,7 @@ class phantom:
                                        [self.angles, *dpix_up], dtype='float32')
         # Create geometry
         geometry = odl.tomo.ConeFlatGeometry(
-            angle_partition, det_partition, src_radius=src_radius,
+            angle_partition, det_partition_up, src_radius=src_radius,
                             det_radius=det_radius, axis=[0, 0, 1])
         FP = odl.tomo.RayTransform(reco_space_up, geometry,
                                               use_cache=False)
@@ -167,8 +167,7 @@ class phantom:
             else:
                 self.g = data_space.element(kwargs['load_data_g'])
         else:
-            self.g = resamp(FP(f_up))#resamp(FP_astra(f_up, reco_space_up, geometry, factor))
-
+            self.g = resamp(FP(f_up))
             if self.noise == None:
                 pass
             elif self.noise[0] == 'Gaussian':
