@@ -42,7 +42,7 @@ def compute_QM(rec, CT_obj, measures):
     else:
         Q = []
         Q += [im.MSR(CT_obj.FwP(rec), CT_obj.g)]
-    return np.asarray(Q)
+    return np.asarray(Q)[None, :]
 
 class results:
     def __init__(self, algo, rec, measures, var, param, t_rec):
@@ -57,7 +57,7 @@ class results:
         self.Ql = []
         li = []
         li += [algo.method + ', ' + param]
-        li += [i for i in self.Q]
+        li += [i for i in self.Q[0, :]]
         self.Ql += [li]
 
 
@@ -68,12 +68,8 @@ class results:
         self.rec_axis += [[rec[:, :, self.mid], rec[:, self.mid, :],
                       rec[self.mid, :, :]]]
         self.rec_time += [t_rec]
-        if self.rec_it == 1:
-            self.Q = np.concatenate((self.Q[None, :],
-                        compute_QM(rec, algo.CT_obj, measures)[None, :]), 0)
-        else:
-            self.Q = np.concatenate((self.Q,
-                        compute_QM(rec, algo.CT_obj, measures)[None, :]), 0)
+        self.Q = np.append(self.Q,
+                    compute_QM(rec, algo.CT_obj, measures), axis=0)
         li = []
         li += [algo.method + ', ' + param]
         li += [i for i in self.Q[self.rec_it, :]]
