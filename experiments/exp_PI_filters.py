@@ -34,6 +34,8 @@ def cfg():
     # Source radius
     src_rad = 10
 
+    f_load_path = None
+    g_load_path = None
 
 
     # Specifics for the expansion operator
