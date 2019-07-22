@@ -29,7 +29,7 @@ def cfg():
     angs = [360, 96]
     angles = angs[it_i]
     noise_lvls = [['Poisson', 2 ** 8], None]
-    noise = noise[it_i]
+    noise = noise_lvls[it_i]
 
     # Source radius
     src_rad = 10
