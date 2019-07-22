@@ -17,19 +17,19 @@ pylab.close('all')
 t = time.time()
 # %% Set variables
 # The size of the measured objects in voxels
-pix = 256
+pix = 512
 voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'Shepp-Logan'
+phantom = 'FORBILD'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
-noise = None#['Poisson', 2 ** 10]
+noise = None #['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
-angles = 180
+angles = 64
 # The amount of projection angles in the measurements
 
 # Source to center of rotation radius
@@ -68,16 +68,17 @@ data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
 case = ddf.CCB_CT(data_obj)#
 ## Initialize the algorithms (FDK, SIRT)
 case.init_algo()
-#case.init_DDF_FDK()
+case.init_DDF_FDK()
 # %%
-#case.TFDK.optim_param(4, 100)
-#case.FDK.do('Ram-Lak')
-#case.SIRT.do(1)
-#rec.show()
-#case.TFDK.do('optim')
+case.TFDK.optim_param(4)
+case.PIFDK.optim_param(4)
+case.FDK.do('Ram-Lak')
+case.TFDK.do('optim')
+case.PIFDK.do('optim')
 
 # %% Show results
 case.table()
-#case.SIRT.show(1)
+case.TFDK.show()
+case.PIFDK.show()
 
 

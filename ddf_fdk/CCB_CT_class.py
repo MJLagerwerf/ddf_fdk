@@ -141,6 +141,7 @@ class CCB_CT:
         # Create the forward-operator 'A' for our framework
         self.DDC = self.FwP * self.FDK_op * self.Exp_op
 
+        self.DC = self.FDK_op * self.Exp_op
         # Create the FDK binned operator
         self.FDK_bin = self.FDK_op * self.Exp_op
 
@@ -152,6 +153,9 @@ class CCB_CT:
 
         self.SFDK = algo.SFDK_class(self)
         self.rec_methods += [self.SFDK]
+        
+        self.PIFDK = algo.PIFDK_class(self)
+        self.rec_methods += [self.PIFDK]
 
     def init_LRF_FDK(self, factor, bin_param=2, expansion_op='linear'):
         # Get a low resolution phantom
@@ -199,6 +203,15 @@ class CCB_CT:
             self.Atg = np.asarray(self.DDC.adjoint(self.g))
             self.DDC_norm = np.linalg.norm(self.AtA) ** (1/2)
 
+    def Matrix_Comp_B(self):
+        if hasattr(self, 'BtB'):
+            pass
+        else:
+            self.BtB = odl.operator.oputils.matrix_representation(
+                    self.DC.adjoint * self.DC)
+            self.Btf = np.asarray(self.DC.adjoint(self.phantom.f))
+            self.DC_norm = np.linalg.norm(self.BtB) ** (1/2)
+
     def Matrix_Comp_C(self):
         if hasattr(self, 'CtC'):
             pass
@@ -230,7 +243,7 @@ class CCB_CT:
                               self.angles, ang_freq=1)
         CTo = CCB_CT(DO, data_struct=False)
         CTo.init_algo()
-        self.GS = CTo.SIRT_NN.do(niter=it, compute_results='no')
+        self.GS = CTo.SIRT_NN.do(niter=it, compute_results=False)
         CTo, DO, g_LR = None, None, None
         gc.collect()
         
