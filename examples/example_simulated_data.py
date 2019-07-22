@@ -17,7 +17,7 @@ pylab.close('all')
 t = time.time()
 # %% Set variables
 # The size of the measured objects in voxels
-pix = 512
+pix = 256
 voxels = [pix, pix, pix]
 
 # Pick your phantom
@@ -26,10 +26,10 @@ phantom = 'FORBILD'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
-noise = None #['Poisson', 2 ** 8]
+noise = ['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
-angles = 64
+angles = 360
 # The amount of projection angles in the measurements
 
 # Source to center of rotation radius
@@ -70,8 +70,8 @@ case = ddf.CCB_CT(data_obj)#
 case.init_algo()
 case.init_DDF_FDK()
 # %%
-case.TFDK.optim_param(4)
-case.PIFDK.optim_param(4)
+case.TFDK.optim_param()
+case.PIFDK.optim_param()
 case.FDK.do('Ram-Lak')
 case.TFDK.do('optim')
 case.PIFDK.do('optim')

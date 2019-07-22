@@ -98,11 +98,11 @@ def main(specifics):
     ex.add_artifact(case.WV_path + specifics + '_TFDK_rec.npy')
     Q[0, :] = case.TFDK.results.Q
     
-    case.TFDK.do(lam='optim')
-    np.save(case.WV_path + specifics + '_TFDK_rec.npy',
-            case.TFDK.results.rec_axis[-1])
-    ex.add_artifact(case.WV_path + specifics + '_TFDK_rec.npy')
-    Q[1, :] = case.TFDK.results.Q
+    case.PIFDK.do(lam='optim')
+    np.save(case.WV_path + specifics + '_PIFDK_rec.npy',
+            case.PIFDK.results.rec_axis[-1])
+    ex.add_artifact(case.WV_path + specifics + '_PIFDK_rec.npy')
+    Q[1, :] = case.PIFDK.results.Q
 
 
     np.save(case.WV_path + specifics + '_AtA.npy', case.AtA)
