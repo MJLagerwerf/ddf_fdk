@@ -218,6 +218,59 @@ class phantom:
             # mass att. coeff = 0.27, --> att. coeff = 0.24
             f = odl.phantom.defrise(reco_space) * 0.24
             return reco_space, f
+        
+        elif self.PH == 'Defrise random':
+            if 'load_data_f' in kwargs:
+                f = reco_space.element(np.load(kwargs['load_data_f']))
+            else:
+                if 'second' in kwargs:
+                    seed_old = np.random.get_state()
+                    np.random.set_state(self.seed)
+                else:
+                    self.seed = np.random.get_state()
+            nellipses = 8
+            ellipses = []
+            pt = 5
+            self.volumesize = np.array([pt, pt, pt], dtype='float32')
+            # Scale the detector correctly
+            self.detecsize = np.array([2 * self.volumesize[0], 
+                                       self.volumesize[1]])
+            # Make the reconstruction space
+            reco_space = odl.uniform_discr(min_pt=-self.volumesize,
+                                           max_pt=self.volumesize,
+                                            shape=voxels, dtype='float32')
+            if 'load_data_f' in kwargs:
+                f = reco_space.element(np.load(kwargs['load_data_f']))
+            else:
+                # Create the phantom:
+                # We will set the ellipsoids to be plastic.
+                # The plastic has density of +- 0.9 g/cm^3,
+                # mass att. coeff = 0.27, --> att. coeff = 0.24
+                for i in range(nellipses):
+                    value = 1 + np.random.uniform(-.1, .1)
+                    axis_1 = 0.5 + np.random.uniform(-.1, .1)
+                    axis_2 = 0.5 + np.random.uniform(-.1, .1)
+                    axis_3 = 0.5 / (nellipses + 1)
+                    center_x = center_y = 0.0
+                    center_z = -1 + 2.0 / (nellipses + 1.0) * (i + 1)
+                    rotation_phi = np.random.uniform(-.05, .05) * np.pi
+                    rotation_theta = np.random.uniform(-.05, .05) * np.pi
+                    rotation_psi = np.random.uniform(-.05, .05) * np.pi
+                    
+                    
+                    ellipses.append(
+                        [value, axis_1, axis_2, axis_3,
+                         center_x, center_y, center_z,
+                         rotation_phi, rotation_theta, rotation_psi])
+                    
+                f = odl.phantom.ellipsoid_phantom(reco_space, ellipses,
+                                                  min_pt=-self.volumesize,
+                                                  max_pt= self.volumesize)
+            if 'second' in kwargs:
+                np.random.set_state(seed_old)
+            return reco_space, f * 0.24
+            
+        
         elif self.PH == "Derenzo":
             # The derenzo phantom is 22 cm in diameter
             self.volumesize = np.array([4, 4, 4], dtype='float32')
