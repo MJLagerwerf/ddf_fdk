@@ -91,6 +91,8 @@ class algorithm_class:
         if clim == None:
             clim = [np.min(self.CT_obj.phantom.f),
                     np.max(self.CT_obj.phantom.f)]
+        elif clim == False:
+            clim = None
         xy, xz, yz = self.results.rec_axis[rec_it]
         fig, (ax1, ax2, ax3) = pylab.subplots(1, 3, figsize=[20, 6])
         fig.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
