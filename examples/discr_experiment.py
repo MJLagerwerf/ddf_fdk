@@ -40,7 +40,7 @@ noise = None #['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 360
-up_samp = [1.5, 2, np.exp(1), 3]
+up_samp = [1.5, 2, np.exp(1), 3, np.pi]
 
 Q_TFDK = np.zeros((np.size(up_samp), 3))
 Q_FDK = np.zeros((np.size(up_samp), 3))
@@ -64,12 +64,14 @@ for us in up_samp:
     # %% Show results
     case.table()
     i += 1
+    case = None
+    data_obj = None
+    gc.collect()
     
 
 
 
-headers = ['Method', '$sc=1.5$', '$sc=2$', '$sc=e$', '$sc=3$', '$sc=\pi$',
-           '$sc=4$', '$sc=6$']
+headers = ['Method', '$sc=1.5$', '$sc=2$', '$sc=e$', '$sc=3$', '$sc=\pi$']
 
 Ql = [['MAE', *Q_TFDK[:, 1]], ['SSIM', *Q_TFDK[:, 2]]]
 import tabulate as tab
