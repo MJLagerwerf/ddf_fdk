@@ -32,7 +32,7 @@ noise = None #['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 180
-up_samp = [1.5, 2, np.exp(1), 3, 4, 6]
+up_samp = [1.5, 2, np.exp(1), 3, np.pi, 4, 6]
 
 Q_TFDK = np.zeros((np.size(up_samp), 3))
 Q_FDK = np.zeros((np.size(up_samp), 3))
@@ -56,16 +56,23 @@ for us in up_samp:
     case.table()
     i += 1
     
-
+# %%
 
 
 headers = ['Method', '$sc=1.5$', '$sc=2$', '$sc=e$', '$sc=3$', '$sc=\pi$',
            '$sc=4$', '$sc=6$']
 
-Ql = [['MAE', *Q_TFDK[:, 1]], ['SSIM', *Q_TFDK[:, 2]]]
+Ql = [['Ram-Lak: MAE', *Q_FDK[:, 1]], ['Ram-Lak: SSIM', *Q_FDK[:, 2]],
+      ['MR-filter: MAE', *Q_TFDK[:, 1]], ['MR-filter: SSIM', *Q_TFDK[:, 2]]]
+      
+
 import tabulate as tab
-latex_table = tab.tabulate(Ql, headers, tablefmt='latex')
+latex_table = tab.tabulate(Ql, headers, tablefmt='latex', floatfmt=('.s',".4e",
+                                                         ".4f", ".4f"))
 table = open(case.WV_path + '_table.txt', 'w')
 table.write(latex_table)
 table.close()
-print(tab.tabulate(Ql, headers, tablefmt='latex'))
+print(tab.tabulate(Ql, headers, tablefmt='latex', floatfmt=('.s',".4f",
+                                                         ".4f", ".4f",
+                                                         ".4f", ".4f",
+                                                         ".4f", ".4f")))

@@ -46,6 +46,7 @@ Q_TFDK = np.zeros((np.size(up_samp), 3))
 Q_FDK = np.zeros((np.size(up_samp), 3))
 i = 0
 for us in up_samp:
+    print('starting case sc=', us)
     data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad,
                            samp_fac=us)
 
@@ -73,10 +74,16 @@ for us in up_samp:
 
 headers = ['Method', '$sc=1.5$', '$sc=2$', '$sc=e$', '$sc=3$', '$sc=\pi$']
 
-Ql = [['MAE', *Q_TFDK[:, 1]], ['SSIM', *Q_TFDK[:, 2]]]
+Ql = [['Ram-Lak: MAE', *Q_FDK[:, 1]], ['Ram-Lak: SSIM', *Q_FDK[:, 2]],
+      ['MR-filter: MAE', *Q_TFDK[:, 1]], ['MR-filter: SSIM', *Q_TFDK[:, 2]]]
+      
+
 import tabulate as tab
-latex_table = tab.tabulate(Ql, headers, tablefmt='latex')
-table = open('latex_table.txt', 'w')
+latex_table = tab.tabulate(Ql, headers, tablefmt='latex', floatfmt=('.s',".4e",
+                                                         ".4f", ".4f"))
+table = open(case.WV_path + '_table.txt', 'w')
 table.write(latex_table)
 table.close()
-print(tab.tabulate(Ql, headers, tablefmt='latex'))
+print(tab.tabulate(Ql, headers, tablefmt='latex', floatfmt=('.s',".4f",
+                                                         ".4f", ".4f",
+                                                         ".4f", ".4f")))
