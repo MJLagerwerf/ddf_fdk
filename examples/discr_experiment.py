@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Mon Aug  5 16:34:31 2019
+
+@author: lagerwer
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Wed Mar 28 11:40:55 2018
 
 @author: lagerwer
@@ -19,7 +27,7 @@ pylab.close('all')
 t = time.time()
 # %% Set variables
 # The size of the measured objects in voxels
-pix = 256
+pix = 1024
 voxels = [pix, pix, pix]
 
 # Pick your phantom
@@ -31,8 +39,8 @@ phantom = 'FORBILD'
 noise = None #['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
-angles = 180
-up_samp = [1.5, 2, np.exp(1), 3, 4, 6]
+angles = 360
+up_samp = [1.5, 2, np.exp(1), 3]
 
 Q_TFDK = np.zeros((np.size(up_samp), 3))
 Q_FDK = np.zeros((np.size(up_samp), 3))
@@ -47,9 +55,10 @@ for us in up_samp:
     case.init_algo()
     case.init_DDF_FDK()
     # %%
-#    case.TFDK.optim_param()
+    if i == 0:
+        lam = case.TFDK.optim_param()
     case.FDK.do('Ram-Lak')
-    case.TFDK.do(lam=1e-5)
+    case.TFDK.do(lam=lam)
     Q_TFDK[i, :] = case.TFDK.results.Q
     Q_FDK[i, :] = case.FDK.results.Q
     # %% Show results
@@ -65,7 +74,7 @@ headers = ['Method', '$sc=1.5$', '$sc=2$', '$sc=e$', '$sc=3$', '$sc=\pi$',
 Ql = [['MAE', *Q_TFDK[:, 1]], ['SSIM', *Q_TFDK[:, 2]]]
 import tabulate as tab
 latex_table = tab.tabulate(Ql, headers, tablefmt='latex')
-table = open(case.WV_path + '_table.txt', 'w')
+table = open('latex_table.txt', 'w')
 table.write(latex_table)
 table.close()
 print(tab.tabulate(Ql, headers, tablefmt='latex'))

@@ -76,7 +76,11 @@ def FP_astra(f, reco_space, geom, factor):
 class phantom:
     def __init__(self, voxels, PH, angles, noise, src_rad, det_rad, **kwargs):
         self.data_type = 'simulated'
-        voxels_up = [int(v * 1.5) for v in voxels]
+        if 'samp_fac' in kwargs:
+            voxels_up = [int(v * kwargs['samp_fac']) for v in voxels]
+        else:
+            voxels_up = [int(v * 1.5) for v in voxels]
+
         self.voxels = voxels
         self.PH = PH
         self.angles = angles
