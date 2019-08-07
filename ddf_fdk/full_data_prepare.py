@@ -127,7 +127,11 @@ def preprocess_data(path, dset, sc, redo):
         dark = red.read_raw(path + dset, 'di', sample=sampling)
         flat = red.read_raw(path + dset, 'io', sample=sampling)
         proj = red.read_raw(path + dset, 'scan_', sample=sampling)
-        
+        # if there is a dead pixel, give it the minimum photon count from proj
+        max_photon_count = proj.max()
+        proj[proj == 0] = max_photon_count + 1
+        min_photon_count = proj.min()
+        proj[proj == max_photon_count + 1] = min_photon_count
         # %%
         proj = (proj - dark) / (flat.mean(0) - dark)
         proj = -np.log(proj)
