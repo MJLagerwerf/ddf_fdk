@@ -268,11 +268,13 @@ def make_golden_standard_and_mask(path, sc=1, zoom=False):
     save[2, :, :] = rec[vox // 2, :, :]
     np.save(proc_path + 'GT_ax', save)
     diter = int(1.5 * 2 **(np.log2(vox) - 5))
-    mask = sp.binary_dilation(rec, iterations=diter)
+    it = 5
+    mask = sp.binary_erosion(rec, iterations=it)
+    mask = sp.binary_dilation(mask, iterations=diter + it)
     save[0, :, :], save[1, :, :] = mask[:, :, vox // 2], mask[:, vox // 2, :]
     save[2, :, :] = mask[vox // 2, :, :]
     np.save(proc_path + 'mask_ax', save)
-#    mask_size = np.sum(mask)
+    mask_size = np.sum(mask)
     
     # %%
     if sc == 1:

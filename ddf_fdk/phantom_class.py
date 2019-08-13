@@ -80,7 +80,6 @@ class phantom:
             voxels_up = [int(v * kwargs['samp_fac']) for v in voxels]
         else:
             voxels_up = [int(v * 1.5) for v in voxels]
-
         self.voxels = voxels
         self.PH = PH
         self.angles = angles
@@ -603,7 +602,7 @@ class phantom:
             x_c, y_c, z_c = 0.2, -0.5, 0
             rot1, rot2, rot3 = 0, 1.3, 0.25 * np.pi
             ellip = [[a, x_s, y_s, z_s, x_c, y_c, z_c, rot1, rot2, rot3]]
-            phantom = odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
+            img += odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
                                                     min_pt=[.2 * pix, .2 * pix,
                                                             .2 * pix],
                                                     max_pt=[.8 * pix, .8 * pix,
@@ -613,7 +612,7 @@ class phantom:
             x_c, y_c, z_c=-.25, 0, .75
             rot1, rot2, rot3 = 0, 1.3, 0.25 * np.pi
             ellip = [[a, x_s, y_s, z_s, x_c, y_c, z_c, rot1, rot2, rot3]]
-            phantom1 = odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
+            img += odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
                                                     min_pt=[.2 * pix, .2 * pix,
                                                             .2 * pix],
                                                     max_pt=[.8 * pix, .8 * pix,
@@ -624,16 +623,14 @@ class phantom:
             x_c, y_c, z_c=0, -.75, .6
             rot1, rot2, rot3 = 0, 1.3, 0.25 * np.pi
             ellip = [[a, x_s, y_s, z_s, x_c, y_c, z_c, rot1, rot2, rot3]]
-            phantom2 = odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
+            img += odl.phantom.ellipsoid_phantom(test_reco_space, ellip,
                                                     min_pt=[.2 * pix, .2 * pix,
                                                             .2 * pix],
                                                     max_pt=[.8 * pix, .8 * pix,
                                                             .8 * pix])
             
             
-            img += phantom
-            img += phantom1
-            img += phantom2
+
             
             clip_cylinder(voxels[0], (img))
             # Normalize phantom
