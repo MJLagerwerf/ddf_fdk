@@ -19,8 +19,8 @@ def FDK_astra(g, filt, geom, reco_space, ang_freq=None):
     w_du, w_dv = (geom.detector.partition.max_pt \
                     -geom.detector.partition.min_pt) / np.array([u,v])
     if ang_freq is not None:
-        angles = np.linspace(np.pi / 500, (2 + 1 / 500) * np.pi,
-                             500, False)[::ang_freq]
+        angles = np.linspace(np.pi / ang, (2 + 1 / ang) * np.pi,
+                             ang, False)[::ang_freq]
     else:
         angles = np.linspace(np.pi/ang, (2 + 1 / ang) * np.pi, ang, False)
 

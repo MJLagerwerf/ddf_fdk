@@ -108,6 +108,8 @@ def find_center(P_a, meta):
         midpoint = COR[np.argmin(M)]
     
     return midpoint * -s2o / s2d / pix_size
+
+
 # %%
 def preprocess_data(path, dset, sc, redo):
     start = time.time()
@@ -124,9 +126,9 @@ def preprocess_data(path, dset, sc, redo):
     if not os.path.exists(save_path + '.npy') or redo:
         meta = load_meta(path + dset + '/', sc)
         sampling = [sc, sc]
-        dark = red.read_raw(path + dset, 'di', sample=sampling)
-        flat = red.read_raw(path + dset, 'io', sample=sampling)
-        proj = red.read_raw(path + dset, 'scan_', sample=sampling)
+        dark = red.read_raw(path + dset, 'di0', sample=sampling)
+        flat = red.read_raw(path + dset, 'io0', sample=sampling)
+        proj = red.read_raw(path + dset, 'scan_0', sample=sampling)
         # if there is a dead pixel, give it the minimum photon count from proj
         max_photon_count = proj.max()
         proj[proj == 0] = max_photon_count + 1

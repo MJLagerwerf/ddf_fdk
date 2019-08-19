@@ -89,39 +89,42 @@ class CCB_CT:
         self.filter_space = odl.uniform_discr_frompartition(filter_part,
                                                             dtype='float64')
         # %% Create the FP and BP and the data
-        # Forward Projection
-        self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry,
-                                         use_cache=False)
-
-        # Backward Projection
-        self.BwP = odl.tomo.RayBackProjection(self.reco_space, self.geometry,
-                                              use_cache=False)
-
         self.g = self.phantom.g
-        # %% Create the operators for the FDK framework
-
-        # Create the FDK weighting for the data
-        w_FDK = sup.FDK_weighting(dpix, self.det_space, self.w_detu,
-                                  self.w_detv, src_radius)
-
-        # Scale the data according to the FDK weighting
-        self.g_scl = np.asarray(self.g.copy())
-        for a in range(self.angles):
-            self.g_scl[a, :, :] *= w_FDK
-
-        self.conv_op = sup.ConvolutionOp(self.filter_space, self.FwP.range,
-                                         self.det_space, self.w_detv,
-                                         self.g_scl,
-                                         self.angle_space.weighting.const)
-
         # Create fourier filter space
         fourier_filter_part = odl.uniform_partition(0, np.pi,
                                         (self.conv_op.frs_detu))
         self.fourier_filter_space = odl.uniform_discr_frompartition(
                 fourier_filter_part, dtype='complex64')
+        
+        if self.phantom.vecs == False:
+            # Forward Projection
+            self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry,
+                                             use_cache=False)
+    
+            # Backward Projection
+            self.BwP = odl.tomo.RayBackProjection(self.reco_space, self.geometry,
+                                                  use_cache=False)
+    
+            # %% Create the operators for the FDK framework
+    
+            # Create the FDK weighting for the data
+            w_FDK = sup.FDK_weighting(dpix, self.det_space, self.w_detu,
+                                      self.w_detv, src_radius)
+    
+            # Scale the data according to the FDK weighting
+            self.g_scl = np.asarray(self.g.copy())
+            for a in range(self.angles):
+                self.g_scl[a, :, :] *= w_FDK
+    
+            self.conv_op = sup.ConvolutionOp(self.filter_space, self.FwP.range,
+                                             self.det_space, self.w_detv,
+                                             self.g_scl,
+                                             self.angle_space.weighting.const)
+    
 
-        # Create FDK operator which takes filter
-        self.FDK_op = self.BwP * self.conv_op
+    
+            # Create FDK operator which takes filter
+            self.FDK_op = self.BwP * self.conv_op
 
 # %% Initialize the algorithms
     def init_algo(self):

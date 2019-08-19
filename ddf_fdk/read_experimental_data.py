@@ -10,6 +10,8 @@ import numpy as np
 import os
 import pylab
 import re
+import imageio
+
 from tqdm import tqdm
 
 
@@ -18,7 +20,8 @@ def read_tiff(file, sample = [1, 1]):
     """
     Read a single image.
     """
-    im = pylab.imread(file)
+#    im = pylab.imread(file)
+    im = imageio.imread(file)
 
     if sample != 1:
         im = im[::sample[0], ::sample[1]]
