@@ -16,6 +16,7 @@ class real_data:
                  vecs=False, zoom=False):
         self.data_type = 'real'
         # %% load data
+        self.vecs = vecs
         self.ang_freq = ang_freq
         self.dataset = dataset
         if type(dataset) == dict:

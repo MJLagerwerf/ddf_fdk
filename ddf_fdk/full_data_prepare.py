@@ -276,7 +276,6 @@ def make_golden_standard_and_mask(path, sc=1, zoom=False):
     save[0, :, :], save[1, :, :] = mask[:, :, vox // 2], mask[:, vox // 2, :]
     save[2, :, :] = mask[vox // 2, :, :]
     np.save(proc_path + 'mask_ax', save)
-    mask_size = np.sum(mask)
     
     # %%
     if sc == 1:

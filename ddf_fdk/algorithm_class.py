@@ -183,7 +183,8 @@ class FDK_class(algorithm_class):
             rec = self.CT_obj.reco_space.element(
                     FDK_meth.FDK_astra(self.CT_obj.g, hf,
                                        self.CT_obj.geometry,
-                                       self.CT_obj.reco_space))
+                                       self.CT_obj.reco_space,
+                                       self.CT_obj.w_detu))
         else:
             rec = self.FDK_hf(hf)
         t_rec = time.time() - t

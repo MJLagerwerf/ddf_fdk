@@ -7,8 +7,12 @@ Created on Mon Sep  3 14:29:41 2018
 """
 import numpy as np
 import astra
+import odl
+import pylab
 
-def FDK_astra(g, filt, geom, reco_space, ang_freq=None):
+from . import support_functions as sup
+
+def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
     # %% Create geometry
     # Make a circular scanning geometry
     ang, u, v = g.shape
@@ -16,17 +20,16 @@ def FDK_astra(g, filt, geom, reco_space, ang_freq=None):
     maxvox = reco_space.max_pt[0]
     vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
                                      minvox, maxvox)
-    w_du, w_dv = (geom.detector.partition.max_pt \
-                    -geom.detector.partition.min_pt) / np.array([u,v])
-    if ang_freq is not None:
-        angles = np.linspace(np.pi / ang, (2 + 1 / ang) * np.pi,
-                             ang, False)[::ang_freq]
-    else:
-        angles = np.linspace(np.pi/ang, (2 + 1 / ang) * np.pi, ang, False)
+    # Build a vecs vector from the geometry, or load it
+    if type(geom) == np.ndarray:
+        vecs = geom
+    elif type(geom) == odl.tomo.geometry.conebeam.ConeFlatGeometry:
+        vecs = sup.astra_conebeam_3d_geom_to_vec(geom)
+    proj_geom = astra.create_proj_geom('cone_vec', v, u, vecs)
 
-    proj_geom = astra.create_proj_geom('cone', w_du, w_dv, v, u,
-                                       angles, geom.src_radius, geom.det_radius)
     g = np.transpose(np.asarray(g.copy()), (2, 0, 1))
+    pylab.figure()
+    pylab.imshow(g[:, 0, :])
     # %%
     # Create a data object for the reconstruction
     rec = np.zeros(astra.geom_size(vol_geom), dtype=np.float32)
@@ -48,7 +51,7 @@ def FDK_astra(g, filt, geom, reco_space, ang_freq=None):
 
     # %% Make a filter geometry
     filter_geom = astra.create_proj_geom('parallel', w_du,  halfFilterSize,
-                                         angles)
+                                         np.zeros((ang)))
     filter_id = astra.data2d.create('-sino', filter_geom, filter2d)
     #
 

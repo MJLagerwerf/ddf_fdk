@@ -18,6 +18,7 @@ import shutil
 import subprocess
 from tempfile import mkstemp
 from scipy.ndimage import gaussian_filter
+from odl.util.npy_compat import moveaxis
 
 from .phantom_class import phantom
 from . import CCB_CT_class as CT
@@ -465,4 +466,70 @@ def get_axis(volume):
     mid = np.size(volume, 0) // 2
     return [volume[:, :, mid], volume[:, mid, :], volume[mid, :, :]]
 
+# %%
+def astra_conebeam_3d_geom_to_vec(geometry):
+    """Create vectors for ASTRA projection geometries from ODL geometry.
 
+    The 3D vectors are used to create an ASTRA projection geometry for
+    cone beam geometries, see ``'cone_vec'`` in the
+    `ASTRA projection geometry documentation`_.
+
+    Each row of the returned vectors corresponds to a single projection
+    and consists of ::
+
+        (srcX, srcY, srcZ, dX, dY, dZ, uX, uY, uZ, vX, vY, vZ)
+
+    with
+
+        - ``src``: the ray source position
+        - ``d``  : the center of the detector
+        - ``u``  : the vector from detector pixel ``(0,0)`` to ``(0,1)``
+        - ``v``  : the vector from detector pixel ``(0,0)`` to ``(1,0)``
+
+    Parameters
+    ----------
+    geometry : `Geometry`
+        ODL projection geometry from which to create the ASTRA geometry.
+
+    Returns
+    -------
+    vectors : `numpy.ndarray`
+        Array of shape ``(num_angles, 12)`` containing the vectors.
+
+    References
+    ----------
+    .. _ASTRA projection geometry documentation:
+       http://www.astra-toolbox.com/docs/geom3d.html#projection-geometries
+    """
+    angles = geometry.angles
+    vectors = np.zeros((angles.size, 12))
+
+    # Source position
+    vectors[:, 0:3] = geometry.src_position(angles)
+
+    # Center of detector in 3D space
+    mid_pt = geometry.det_params.mid_pt
+    vectors[:, 3:6] = geometry.det_point_position(angles, mid_pt)
+
+    # Vectors from detector pixel (0, 0) to (1, 0) and (0, 0) to (0, 1)
+    # `det_axes` gives shape (N, 2, 3), swap to get (2, N, 3)
+    det_axes = moveaxis(geometry.det_axes(angles), -2, 0)
+    px_sizes = geometry.det_partition.cell_sides
+    # Swap detector axes to have better memory layout in  projection data.
+    # ASTRA produces `(v, theta, u)` layout, and to map to ODL layout
+    # `(theta, u, v)` a complete roll must be performed, which is the
+    # worst case (compeltely discontiguous).
+    # Instead we swap `u` and `v`, resulting in the effective ASTRA result
+    # `(u, theta, v)`. Here we only need to swap axes 0 and 1, which
+    # keeps at least contiguous blocks in `v`.
+    vectors[:, 6:9] = det_axes[0] * px_sizes[0]
+    vectors[:, 9:12] = det_axes[1] * px_sizes[1]
+
+    # ASTRA has (z, y, x) axis convention, in contrast to (x, y, z) in ODL,
+    # so we need to adapt to this by changing the order.
+#    newind = []
+#    for i in range(4):
+#        newind += [2 + 3 * i, 1 + 3 * i, 0 + 3 * i]
+#    vectors = vectors[:, newind]
+
+    return vectors

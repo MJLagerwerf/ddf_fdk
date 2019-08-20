@@ -8,6 +8,7 @@ Created on Wed Mar 28 11:40:55 2018
 import odl
 import numpy as np
 import ddf_fdk as ddf
+import astra
 ddf.import_astra_GPU()
 #import real_data_class as RD
 import time
@@ -32,47 +33,26 @@ noise = None #['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 180
-up_samp = [1.5, 2, np.exp(1), 3, np.pi, 4, 6]
 
-Q_TFDK = np.zeros((np.size(up_samp), 3))
-Q_FDK = np.zeros((np.size(up_samp), 3))
-i = 0
-for us in up_samp:
-    data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad,
-                           samp_fac=us)
+data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
 
-    ## %% Create the circular cone beam CT class
-    case = ddf.CCB_CT(data_obj)#
-    ## Initialize the algorithms (FDK, SIRT)
-    case.init_algo()
-    case.init_DDF_FDK()
-    # %%
-#    case.TFDK.optim_param()
-    case.FDK.do('Ram-Lak')
-    case.TFDK.do(lam=1e-5)
-    Q_TFDK[i, :] = case.TFDK.results.Q
-    Q_FDK[i, :] = case.FDK.results.Q
-    # %% Show results
-    case.table()
-    i += 1
-    
+## %% Create the circular cone beam CT class
+case = ddf.CCB_CT(data_obj)#
+## Initialize the algorithms (FDK, SIRT)
+case.init_algo()
+#case.init_DDF_FDK()
 # %%
+#    case.TFDK.optim_param()
+case.FDK.do('Ram-Lak')
+#case.TFDK.do(lam=1e-5)
 
-
-headers = ['Method', '$sc=1.5$', '$sc=2$', '$sc=e$', '$sc=3$', '$sc=\pi$',
-           '$sc=4$', '$sc=6$']
-
-Ql = [['Ram-Lak: MAE', *Q_FDK[:, 1]], ['Ram-Lak: SSIM', *Q_FDK[:, 2]],
-      ['MR-filter: MAE', *Q_TFDK[:, 1]], ['MR-filter: SSIM', *Q_TFDK[:, 2]]]
-      
-
-import tabulate as tab
-latex_table = tab.tabulate(Ql, headers, tablefmt='latex', floatfmt=('.s',".4e",
-                                                         ".4f", ".4f"))
-table = open(case.WV_path + '_table.txt', 'w')
-table.write(latex_table)
-table.close()
-print(tab.tabulate(Ql, headers, tablefmt='latex', floatfmt=('.s',".4f",
-                                                         ".4f", ".4f",
-                                                         ".4f", ".4f",
-                                                         ".4f", ".4f")))
+# %% Show results
+case.table()
+case.FDK.show()
+# %%    
+geometry = case.geometry 
+ang, u, v = case.g.shape
+minvox = case.reco_space.min_pt[0]
+maxvox = case.reco_space.max_pt[0]
+vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
+                                 minvox, maxvox)

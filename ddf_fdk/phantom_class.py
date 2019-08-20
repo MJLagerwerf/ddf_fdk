@@ -80,6 +80,7 @@ class phantom:
             voxels_up = [int(v * kwargs['samp_fac']) for v in voxels]
         else:
             voxels_up = [int(v * 1.5) for v in voxels]
+        self.vecs = False
         self.voxels = voxels
         self.PH = PH
         self.angles = angles

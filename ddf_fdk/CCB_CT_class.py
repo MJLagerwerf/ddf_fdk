@@ -91,8 +91,11 @@ class CCB_CT:
         # %% Create the FP and BP and the data
         self.g = self.phantom.g
         # Create fourier filter space
+        self.rs_detu = int(2 ** (np.ceil(np.log2(self.filter_space.size)) + 1))
+        # set =filter.size if filter is twice the detector
+        self.frs_detu = self.rs_detu // 2 + 1
         fourier_filter_part = odl.uniform_partition(0, np.pi,
-                                        (self.conv_op.frs_detu))
+                                        (self.frs_detu))
         self.fourier_filter_space = odl.uniform_discr_frompartition(
                 fourier_filter_part, dtype='complex64')
         
