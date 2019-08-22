@@ -41,11 +41,11 @@ class CCB_CT:
 
         # %% Set up the geometry
         self.phantom = data_obj
+        self.g = self.phantom.g
         # Make the reconstruction space
         self.reco_space = self.phantom.reco_space
         voxels = self.phantom.voxels
-        factor = 2
-        dpix = [int(factor * voxels[0]), voxels[1]]
+        dpix = [np.shape(self.g)[1], np.shape(self.g)[2]]
         self.w_detu = (2 * self.phantom.detecsize[0]) / dpix[0]
         self.w_detv = (2 * self.phantom.detecsize[1]) / dpix[1]
         if self.phantom.data_type == 'simulated':
@@ -88,8 +88,7 @@ class CCB_CT:
 
         self.filter_space = odl.uniform_discr_frompartition(filter_part,
                                                             dtype='float64')
-        # %% Create the FP and BP and the data
-        self.g = self.phantom.g
+        # %% Create the FP and BP
         # Create fourier filter space
         self.rs_detu = int(2 ** (np.ceil(np.log2(self.filter_space.size)) + 1))
         # set =filter.size if filter is twice the detector
@@ -99,7 +98,7 @@ class CCB_CT:
         self.fourier_filter_space = odl.uniform_discr_frompartition(
                 fourier_filter_part, dtype='complex64')
         
-        if self.phantom.vecs == False:
+        if self.phantom.vecs is None:
             # Forward Projection
             self.FwP = odl.tomo.RayTransform(self.reco_space, self.geometry,
                                              use_cache=False)

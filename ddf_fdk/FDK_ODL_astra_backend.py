@@ -18,9 +18,11 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
     ang, u, v = g.shape
     minvox = reco_space.min_pt[0]
     maxvox = reco_space.max_pt[0]
-    vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
-                                     minvox, maxvox)
+    vox = np.shape(reco_space)[0]
+    vol_geom = astra.create_vol_geom(vox, vox, vox, minvox, maxvox, minvox,
+                                     maxvox, minvox, maxvox)
     # Build a vecs vector from the geometry, or load it
+
     if type(geom) == np.ndarray:
         vecs = geom
     elif type(geom) == odl.tomo.geometry.conebeam.ConeFlatGeometry:
@@ -28,8 +30,7 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
     proj_geom = astra.create_proj_geom('cone_vec', v, u, vecs)
 
     g = np.transpose(np.asarray(g.copy()), (2, 0, 1))
-    pylab.figure()
-    pylab.imshow(g[:, 0, :])
+
     # %%
     # Create a data object for the reconstruction
     rec = np.zeros(astra.geom_size(vol_geom), dtype=np.float32)

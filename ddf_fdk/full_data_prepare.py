@@ -180,7 +180,9 @@ def preprocess_data(path, dset, sc, redo):
 def make_golden_standard_and_mask(path, sc=1, zoom=False):
     # %%
     start = time.time()
+    preprocess_data(path, 'good', sc, redo=False)
     proc_path = path + 'processed_data/'
+    
     if sc == 1:
         g = np.load(proc_path + 'g_good.npy')
     else:

@@ -59,13 +59,12 @@ def FP_astra(f, reco_space, geom, factor):
     maxvox = reco_space.max_pt[0]
     vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
                                      minvox, maxvox)
-    w_du, w_dv = (geom.detector.partition.max_pt \
-                    -geom.detector.partition.min_pt) / np.array([u,v])
-    
-    ang = np.linspace(np.pi/a, (2 + 1 / a) * np.pi, a, False)
-    
-    proj_geom = astra.create_proj_geom('cone', w_du, w_dv, v, u,
-                                       ang, geom.src_radius, geom.det_radius)
+    # Build a vecs vector from the geometry, or load it
+    if type(geom) == np.ndarray:
+        vecs = geom
+    elif type(geom) == odl.tomo.geometry.conebeam.ConeFlatGeometry:
+        vecs = sup.astra_conebeam_3d_geom_to_vec(geom)
+    proj_geom = astra.create_proj_geom('cone_vec', v, u, vecs)
 
     project_id = astra.create_projector('cuda3d', proj_geom, vol_geom)
     W = astra.OpTomo(project_id)
@@ -151,6 +150,7 @@ class phantom:
         # Make a flat detector space
         det_partition_up = odl.uniform_partition(-self.detecsize,
                                                  self.detecsize, dpix_up)
+        self.w_detu = (2 * self.detecsize[0]) / dpix[0]
         # Create data_space_up and data_space
         data_space = odl.uniform_discr((0, *-self.detecsize),
                                        (2 * np.pi, *self.detecsize),

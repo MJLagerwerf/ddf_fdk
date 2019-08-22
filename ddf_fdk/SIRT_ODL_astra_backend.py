@@ -20,8 +20,9 @@ def SIRT_astra(g, niter, geom, reco_space, WV_path, non_neg=False,
     ang, u, v = g.shape
     minvox = reco_space.min_pt[0]
     maxvox = reco_space.max_pt[0]
-    vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
-                                     minvox, maxvox)
+    vox = np.shape(reco_space)[0]
+    vol_geom = astra.create_vol_geom(vox, vox, vox, minvox, maxvox, minvox,
+                                     maxvox, minvox, maxvox)
     # Build a vecs vector from the geometry, or load it
     if type(geom) == np.ndarray:
         vecs = geom

@@ -45,14 +45,8 @@ case.init_algo()
 #    case.TFDK.optim_param()
 case.FDK.do('Ram-Lak')
 #case.TFDK.do(lam=1e-5)
-
+case.SIRT.do(200)
 # %% Show results
 case.table()
-case.FDK.show()
+case.SIRT.show()
 # %%    
-geometry = case.geometry 
-ang, u, v = case.g.shape
-minvox = case.reco_space.min_pt[0]
-maxvox = case.reco_space.max_pt[0]
-vol_geom = astra.create_vol_geom(v, v, v, minvox, maxvox, minvox, maxvox,
-                                 minvox, maxvox)

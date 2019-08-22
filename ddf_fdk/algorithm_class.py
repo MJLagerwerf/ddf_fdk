@@ -157,8 +157,8 @@ class FDK_class(algorithm_class):
 
 
     def FDK_filt(self, filt_type):
-        filt = np.real(np.fft.rfft(sup.ramp_filt(self.CT_obj.conv_op.rs_detu)))
-        freq = 2 * np.arange(len(filt))/(self.CT_obj.conv_op.rs_detu)
+        filt = np.real(np.fft.rfft(sup.ramp_filt(self.CT_obj.rs_detu)))
+        freq = 2 * np.arange(len(filt))/(self.CT_obj.rs_detu)
         if filt_type == 'Ram-Lak':
             pass
         elif filt_type == 'Shepp-Logan':
