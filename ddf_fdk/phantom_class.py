@@ -79,7 +79,7 @@ class phantom:
             voxels_up = [int(v * kwargs['samp_fac']) for v in voxels]
         else:
             voxels_up = [int(v * 1.5) for v in voxels]
-        self.vecs = False
+        self.vecs = None
         self.voxels = voxels
         self.PH = PH
         self.angles = angles
@@ -159,10 +159,10 @@ class phantom:
                                        (2 * np.pi, *self.detecsize), 
                                        [self.angles, *dpix_up], dtype='float32')
         # Create geometry
-        geometry = odl.tomo.ConeFlatGeometry(
+        self.geometry = odl.tomo.ConeFlatGeometry(
             angle_partition, det_partition_up, src_radius=src_radius,
                             det_radius=det_radius, axis=[0, 0, 1])
-        FP = odl.tomo.RayTransform(reco_space_up, geometry,
+        FP = odl.tomo.RayTransform(reco_space_up, self.geometry,
                                               use_cache=False)
         resamp = odl.Resampling(data_space_up, data_space)
         if 'load_data_g' in kwargs:
