@@ -50,9 +50,10 @@ def clip_cylinder(size, img):
     img[outCircle] = 0
 # %%
 def FP_astra(f, reco_space, geom, factor):
+    print('hoi')
     f = np.asarray(f)
     v = reco_space.shape[0]
-    u = 2 * v
+    u = factor * v
     a = geom.angles.size
     g = np.zeros((v, a, u), dtype='float32')
     minvox = reco_space.min_pt[0]
@@ -162,8 +163,8 @@ class phantom:
         self.geometry = odl.tomo.ConeFlatGeometry(
             angle_partition, det_partition_up, src_radius=src_radius,
                             det_radius=det_radius, axis=[0, 0, 1])
-        FP = odl.tomo.RayTransform(reco_space_up, self.geometry,
-                                              use_cache=False)
+#        FP = odl.tomo.RayTransform(reco_space_up, self.geometry,
+#                                              use_cache=False)
         resamp = odl.Resampling(data_space_up, data_space)
         if 'load_data_g' in kwargs:
             if type(kwargs['load_data_g']) == str: 
@@ -171,7 +172,9 @@ class phantom:
             else:
                 self.g = data_space.element(kwargs['load_data_g'])
         else:
-            self.g = resamp(FP(f_up))
+            self.g = resamp(FP_astra(f_up, reco_space_up, self.geometry,
+                                     factor))
+#            self.g = resamp(FP(f_up))
             if self.noise == None:
                 pass
             elif self.noise[0] == 'Gaussian':
@@ -530,6 +533,7 @@ class phantom:
                                                         ellipsoids,
                                                         min_pt=[-3.5, -3.5, -3.5],
                                                         max_pt=[3.5, 3.5, 3.5])
+
                 # Add three Gaussian blobs
                 phantom += po.addGaussianBlob(voxels[0])
                 phantom += po.addGaussianBlob(voxels[0])
@@ -539,12 +543,12 @@ class phantom:
                 phantom += po.addRectangle(voxels[0])
                 phantom += po.addRectangle(voxels[0])
                 # Add three Siemens stars
+
                 phantom += po.addSiemensStar(voxels[0])
                 phantom += po.addSiemensStar(voxels[0])
                 phantom += po.addSiemensStar(voxels[0])
                 clip_cylinder(voxels[0], (phantom))
                 # Normalize phantom
-
                 f = (phantom / np.max(phantom) * .22)
                 if 'second' in kwargs:
                     np.random.set_state(seed_old)
@@ -637,7 +641,7 @@ class phantom:
             # Normalize phantom
 
             f = (img / np.max(img) * .22)
-            
+            print('hoi4')
             return reco_space, f
     
     
