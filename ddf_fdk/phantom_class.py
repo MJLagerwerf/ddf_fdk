@@ -50,7 +50,6 @@ def clip_cylinder(size, img):
     img[outCircle] = 0
 # %%
 def FP_astra(f, reco_space, geom, factor):
-    print('hoi')
     f = np.asarray(f)
     v = reco_space.shape[0]
     u = factor * v
@@ -641,7 +640,7 @@ class phantom:
             # Normalize phantom
 
             f = (img / np.max(img) * .22)
-            print('hoi4')
+
             return reco_space, f
     
     
