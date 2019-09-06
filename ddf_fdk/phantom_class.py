@@ -50,7 +50,8 @@ def clip_cylinder(size, img):
     img[outCircle] = 0
 # %%
 def FP_astra(f, reco_space, geom, factor):
-    f = np.asarray(f)
+    f = np.asarray(np.transpose(f, axes=(2, 0, 1)))
+    
     v = reco_space.shape[0]
     u = factor * v
     a = geom.angles.size
