@@ -163,8 +163,8 @@ class phantom:
         self.geometry = odl.tomo.ConeFlatGeometry(
             angle_partition, det_partition_up, src_radius=src_radius,
                             det_radius=det_radius, axis=[0, 0, 1])
-#        FP = odl.tomo.RayTransform(reco_space_up, self.geometry,
-#                                              use_cache=False)
+        FP = odl.tomo.RayTransform(reco_space_up, self.geometry,
+                                              use_cache=False)
         resamp = odl.Resampling(data_space_up, data_space)
         if 'load_data_g' in kwargs:
             if type(kwargs['load_data_g']) == str: 
@@ -172,9 +172,9 @@ class phantom:
             else:
                 self.g = data_space.element(kwargs['load_data_g'])
         else:
-            self.g = resamp(FP_astra(f_up, reco_space_up, self.geometry,
-                                     factor))
-#            self.g = resamp(FP(f_up))
+#            self.g = resamp(FP_astra(f_up, reco_space_up, self.geometry,
+#                                     factor))
+            self.g = resamp(FP(f_up))
             if self.noise == None:
                 pass
             elif self.noise[0] == 'Gaussian':
