@@ -31,7 +31,7 @@ phantom = 'FORBILD'
 #g_load_path = lp + 'CS_A64_g.npy'
 noise = None #['Poisson', 2 ** 8]
 det_rad = 0
-src_rad = 10
+src_rad = 1
 angles = 180
 
 data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
@@ -45,8 +45,9 @@ case.init_algo()
 #    case.TFDK.optim_param()
 case.FDK.do('Ram-Lak')
 #case.TFDK.do(lam=1e-5)
-case.SIRT.do(200)
+case.SIRT.do(100)
 # %% Show results
 case.table()
+case.FDK.show()
 case.SIRT.show()
 # %%    

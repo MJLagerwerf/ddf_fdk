@@ -21,13 +21,17 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
     vox = np.shape(reco_space)[0]
     vol_geom = astra.create_vol_geom(vox, vox, vox, minvox, maxvox, minvox,
                                      maxvox, minvox, maxvox)
-    # Build a vecs vector from the geometry, or load it
-
+    # Build the projection geometry, through vecs or odl geometry
     if type(geom) == np.ndarray:
         vecs = geom
+        proj_geom = astra.create_proj_geom('cone_vec', v, u, vecs)
     elif type(geom) == odl.tomo.geometry.conebeam.ConeFlatGeometry:
-        vecs = sup.astra_conebeam_3d_geom_to_vec(geom)
-    proj_geom = astra.create_proj_geom('cone_vec', v, u, vecs)
+        angles = np.linspace((1 / ang) * np.pi, (2 + 1 / ang) * np.pi, ang,
+                      False)
+        w_du, w_dv = 2 * geom.detector.partition.max_pt / [u, v]
+        proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
+                                           angles, geom.src_radius,
+                                           geom.det_radius)
 
     g = np.transpose(np.asarray(g.copy()), (2, 0, 1))
 
