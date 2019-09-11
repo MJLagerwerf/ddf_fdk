@@ -20,6 +20,7 @@ class real_data:
         self.data_type = 'real'
         # %% load data
         self.vecs = vecs
+        print(np.shape(vecs))
         self.ang_freq = ang_freq
         self.dataset = dataset
         if type(dataset) == dict:
