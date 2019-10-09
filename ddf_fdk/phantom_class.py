@@ -13,6 +13,7 @@ import astra
 from . import phantom_objects as po
 from . import support_functions as sup
 from . import SIRT_ODL_astra_backend as sirt
+from . import FDK_ODL_astra_backend as fdk
 import gc
 
 # %%
@@ -106,14 +107,15 @@ class phantom:
                                                             second=True,
                                                             **kwargs)
             import time
-            t = time.time()
+
             if compute_xHQ:
+                t = time.time()
                 gHQ = self.generate_HQdata(voxels_up, reco_space_up, f_up)
-                WV_obj_HQ = sup.working_var_map()
-                WV_path_HQ = WV_obj_HQ.WV_path
-                self.xHQ = sirt.SIRT_astra(gHQ, 300, 'xHQ', self.reco_space, 
-                                      WV_path_HQ, non_neg=True)
-            print(time.time() - t, 'seconds to compute the HQ rec')
+#                WV_obj_HQ = sup.working_var_map()
+#                WV_path_HQ = WV_obj_HQ.WV_path
+                self.xHQ = fdk.FDK_astra(gHQ, None, 'xHQ', self.reco_space,
+                                         None)
+                print(time.time() - t, 'seconds to compute the HQ rec')
             reco_space_up, f_up = None, None
             gc.collect()
         
@@ -205,8 +207,8 @@ class phantom:
                              ''.format(self.noise[0]))
 # %%                
     def generate_HQdata(self, voxels_up, reco_space_up, f_up, **kwargs):
-        angles = 500
-        src_rad = 10
+        angles = 1500
+        src_rad = 100
         det_rad = 0
         factor = 2
         dpix_up = [factor * voxels_up[0], voxels_up[1]]

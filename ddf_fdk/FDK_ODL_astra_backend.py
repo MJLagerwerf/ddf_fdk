@@ -32,9 +32,21 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
         proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
                                            angles, geom.src_radius,
                                            geom.det_radius)
-    
+    elif geom == 'xHQ':
+        ang = 1500
+        src_rad = 10
+        det_rad = 0
+        angles = np.linspace((1 / ang) * np.pi, (2 + 1 / ang) * np.pi, ang,
+                      False)
+        obj_size = 2 * reco_space.max_pt[0]
+        w_du = 2 * obj_size / u
+        w_dv = obj_size / v
+        proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
+                                           angles, src_rad * obj_size,
+                                           det_rad * obj_size)
     g = np.transpose(np.asarray(g.copy()), (2, 0, 1))
 
+    cfg = astra.astra_dict('FDK_CUDA')
     # %%
     # Create a data object for the reconstruction
     rec = np.zeros(astra.geom_size(vol_geom), dtype=np.float32)
@@ -45,25 +57,26 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
 
 
 #    rec_id = astra.data3d.link('-vol', vol_geom, rec)
+    if geom == 'xHQ':
+        pass
+    else:
+        fullFilterSize = int(2 ** (np.ceil(np.log2(2 * u))))
+        halfFilterSize = fullFilterSize // 2 + 1
+        # %% Make the matrix columns of the matrix B
+        filter2d = np.zeros((ang, halfFilterSize))
+        for i in range(ang):
+            filter2d[i, :] = filt * 4 * w_du
+    
+        # %% Make a filter geometry
+        filter_geom = astra.create_proj_geom('parallel', w_du,  halfFilterSize,
+                                             np.zeros((ang)))
+        filter_id = astra.data2d.create('-sino', filter_geom, filter2d)
+        cfg['option'] = { 'FilterSinogramId': filter_id}
 
 
-    fullFilterSize = int(2 ** (np.ceil(np.log2(2 * u))))
-    halfFilterSize = fullFilterSize // 2 + 1
-    # %% Make the matrix columns of the matrix B
-    filter2d = np.zeros((ang, halfFilterSize))
-    for i in range(ang):
-        filter2d[i, :] = filt * 4 * w_du
-
-    # %% Make a filter geometry
-    filter_geom = astra.create_proj_geom('parallel', w_du,  halfFilterSize,
-                                         np.zeros((ang)))
-    filter_id = astra.data2d.create('-sino', filter_geom, filter2d)
-    #
-
-    cfg = astra.astra_dict('FDK_CUDA')
     cfg['ReconstructionDataId'] = rec_id
     cfg['ProjectionDataId'] = proj_id
-    cfg['option'] = { 'FilterSinogramId': filter_id}
+
     # Create the algorithm object from the configuration structure
     alg_id = astra.algorithm.create(cfg)
 
@@ -77,5 +90,8 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
     astra.algorithm.delete(alg_id)
     astra.data3d.delete(rec_id)
     astra.data3d.delete(proj_id)
-    astra.data2d.delete(filter_id)
+    if geom == 'xHQ':
+        pass
+    else:
+        astra.data2d.delete(filter_id)
     return rec
