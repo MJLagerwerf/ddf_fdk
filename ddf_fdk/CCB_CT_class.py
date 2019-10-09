@@ -309,7 +309,7 @@ class CCB_CT:
             pylab.savefig(save_name+extension, bbox_inches='tight')
 
 # %%
-    def show_xHQ(self, clim=None, save_name=None, extension='.eps',
+    def show_xHQ(self, clim=None, save_name=None, extension='.pdf',
                      fontsize=20):
         space = self.reco_space
         if clim == None:

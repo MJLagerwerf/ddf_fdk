@@ -111,9 +111,13 @@ class phantom:
             if compute_xHQ:
                 t = time.time()
                 gHQ = self.generate_HQdata(voxels_up, reco_space_up, f_up)
-#                WV_obj_HQ = sup.working_var_map()
-#                WV_path_HQ = WV_obj_HQ.WV_path
-                self.xHQ = fdk.FDK_astra(gHQ, None, 'xHQ', self.reco_space,
+                w_detu = self.reco_space.max_pt[0] * 2 / voxels[0]
+                rs_detu = int(2 ** (np.ceil(np.log2(self.voxels[0] * 2)) + 1))
+                filt = np.real(np.fft.rfft(sup.ramp_filt(rs_detu)))
+                freq = 2 * np.arange(len(filt))/(rs_detu)
+                filt = filt * (np.cos(freq * np.pi / 2) ** 2)  / 2 / w_detu
+
+                self.xHQ = fdk.FDK_astra(gHQ, filt, 'xHQ', self.reco_space,
                                          None)
                 print(time.time() - t, 'seconds to compute the HQ rec')
             reco_space_up, f_up = None, None
@@ -237,7 +241,7 @@ class phantom:
         resamp = odl.Resampling(data_space_up, data_space)
         
         g = resamp(FP(f_up))
-        g = data_space.element(self.add_poisson_noise(2 ** 20, g=g))
+#        g = data_space.element(self.add_poisson_noise(2 ** 20, g=g))
         return g
 
 

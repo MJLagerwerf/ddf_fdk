@@ -38,6 +38,8 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
         det_rad = 0
         angles = np.linspace((1 / ang) * np.pi, (2 + 1 / ang) * np.pi, ang,
                       False)
+#        angles = np.linspace(0, (2) * np.pi, ang,
+#                      False)
         obj_size = 2 * reco_space.max_pt[0]
         w_du = 2 * obj_size / u
         w_dv = obj_size / v
@@ -57,21 +59,21 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
 
 
 #    rec_id = astra.data3d.link('-vol', vol_geom, rec)
-    if geom == 'xHQ':
-        pass
-    else:
-        fullFilterSize = int(2 ** (np.ceil(np.log2(2 * u))))
-        halfFilterSize = fullFilterSize // 2 + 1
-        # %% Make the matrix columns of the matrix B
-        filter2d = np.zeros((ang, halfFilterSize))
-        for i in range(ang):
-            filter2d[i, :] = filt * 4 * w_du
-    
-        # %% Make a filter geometry
-        filter_geom = astra.create_proj_geom('parallel', w_du,  halfFilterSize,
-                                             np.zeros((ang)))
-        filter_id = astra.data2d.create('-sino', filter_geom, filter2d)
-        cfg['option'] = { 'FilterSinogramId': filter_id}
+#    if geom == 'xHQ':
+#        cfg['option'] = { 'FilterType': 'hann' }
+#    else:
+    fullFilterSize = int(2 ** (np.ceil(np.log2(2 * u))))
+    halfFilterSize = fullFilterSize // 2 + 1
+    # %% Make the matrix columns of the matrix B
+    filter2d = np.zeros((ang, halfFilterSize))
+    for i in range(ang):
+        filter2d[i, :] = filt * 4 * w_du
+
+    # %% Make a filter geometry
+    filter_geom = astra.create_proj_geom('parallel', w_du,  halfFilterSize,
+                                         np.zeros((ang)))
+    filter_id = astra.data2d.create('-sino', filter_geom, filter2d)
+    cfg['option'] = { 'FilterSinogramId': filter_id}
 
 
     cfg['ReconstructionDataId'] = rec_id
