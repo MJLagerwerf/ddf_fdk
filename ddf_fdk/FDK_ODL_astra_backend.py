@@ -32,7 +32,7 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
         proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
                                            angles, geom.src_radius,
                                            geom.det_radius)
-
+    
     g = np.transpose(np.asarray(g.copy()), (2, 0, 1))
 
     # %%

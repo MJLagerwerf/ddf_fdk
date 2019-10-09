@@ -34,8 +34,20 @@ def SIRT_astra(g, niter, geom, reco_space, WV_path, non_neg=False,
         proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
                                            angles, geom.src_radius,
                                            geom.det_radius)
+    elif geom == 'xHQ':
+        ang = 500
+        src_rad = 10
+        det_rad = 0
+        angles = np.linspace((1 / ang) * np.pi, (2 + 1 / ang) * np.pi, ang,
+                      False)
+        obj_size = 2 * reco_space.max_pt[0]
+        w_du = 2 * obj_size / u
+        w_dv = obj_size / v
+        proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
+                                           angles, src_rad * obj_size,
+                                           det_rad * obj_size)
 
-    g = np.transpose(np.asarray(g.copy()), (2, 0, 1))    
+    g = np.transpose(np.asarray(g.copy()), (2, 0, 1))
     
     # %%
     proj_id = astra.data3d.create('-proj3d', proj_geom, g)
@@ -89,7 +101,10 @@ def SIRT_astra(g, niter, geom, reco_space, WV_path, non_neg=False,
     astra.data3d.delete(rec_id)
     astra.data3d.delete(proj_id)
     astra.projector3d.delete(projector_id)
-    if type(niter) == list:
-        return xlist, t_rec
-    if type(niter) is not list:
-        return 'SIRT_' + str(niter)+'.npy', t_rec
+    if geom == 'xHQ':
+        return rec
+    else:
+        if type(niter) == list:
+            return xlist, t_rec
+        if type(niter) is not list:
+            return 'SIRT_' + str(niter)+'.npy', t_rec

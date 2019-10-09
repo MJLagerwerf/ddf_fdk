@@ -12,6 +12,7 @@ import scipy.ndimage.morphology as sp
 import astra
 from . import phantom_objects as po
 from . import support_functions as sup
+from . import SIRT_ODL_astra_backend as sirt
 import gc
 
 # %%
@@ -74,7 +75,8 @@ def FP_astra(f, reco_space, geom, factor):
     return np.transpose(g, (1, 2, 0))
 
 class phantom:
-    def __init__(self, voxels, PH, angles, noise, src_rad, det_rad, **kwargs):
+    def __init__(self, voxels, PH, angles, noise, src_rad, det_rad, 
+                 compute_xHQ=False, **kwargs):
         self.data_type = 'simulated'
         if 'samp_fac' in kwargs:
             voxels_up = [int(v * kwargs['samp_fac']) for v in voxels]
@@ -100,12 +102,22 @@ class phantom:
         else:
             reco_space_up, f_up = self.phantom_creation(voxels_up, **kwargs)
             self.generate_data(voxels_up, reco_space_up, f_up, **kwargs)
-            reco_space_up, f_up = None, None
-            gc.collect()
             self.reco_space, self.f = self.phantom_creation(voxels, 
                                                             second=True,
                                                             **kwargs)
+            import time
+            t = time.time()
+            if compute_xHQ:
+                gHQ = self.generate_HQdata(voxels_up, reco_space_up, f_up)
+                WV_obj_HQ = sup.working_var_map()
+                WV_path_HQ = WV_obj_HQ.WV_path
+                self.xHQ = sirt.SIRT_astra(gHQ, 300, 'xHQ', self.reco_space, 
+                                      WV_path_HQ, non_neg=True)
+            print(time.time() - t, 'seconds to compute the HQ rec')
+            reco_space_up, f_up = None, None
+            gc.collect()
         
+# %%
     def make_mask(self, WV_path):
         self.WV_path = WV_path
         if self.PH in ['Threeshape', 'Fourshape', '22 Ellipses',
@@ -127,10 +139,13 @@ class phantom:
 
     
     # %% Add noise function
-    def add_poisson_noise(self, I_0, seed=None):
+    def add_poisson_noise(self, I_0, g=None, seed=None):
         seed_old = np.random.get_state()
         np.random.seed(seed)
-        data = np.asarray(self.g.copy())
+        if g is None:
+            data = np.asarray(self.g.copy())
+        else:
+            data = np.asarray(g.copy())
         Iclean = (I_0 * np.exp(-data))
         data = None
         Inoise = np.random.poisson(Iclean)
@@ -188,7 +203,43 @@ class phantom:
             else:
                 raise ValueError('unknown `noise type` ({})'
                              ''.format(self.noise[0]))
+# %%                
+    def generate_HQdata(self, voxels_up, reco_space_up, f_up, **kwargs):
+        angles = 500
+        src_rad = 10
+        det_rad = 0
+        factor = 2
+        dpix_up = [factor * voxels_up[0], voxels_up[1]]
+        dpix = [int(factor * self.voxels[0]), self.voxels[0]]
+        src_radius = src_rad * self.volumesize[0] * 2
+        det_radius = det_rad * self.volumesize[0] * 2
+        # Make a circular scanning geometry
+        angle_partition = odl.uniform_partition(0, 2 * np.pi, angles)
+        # Make a flat detector space
+        det_partition_up = odl.uniform_partition(-self.detecsize,
+                                                 self.detecsize, dpix_up)
+        self.w_detu = (2 * self.detecsize[0]) / dpix[0]
+        # Create data_space_up and data_space
+        data_space = odl.uniform_discr((0, *-self.detecsize),
+                                       (2 * np.pi, *self.detecsize),
+                                       [angles, *dpix], dtype='float32')
+        data_space_up = odl.uniform_discr((0, *-self.detecsize),
+                                       (2 * np.pi, *self.detecsize), 
+                                       [angles, *dpix_up], dtype='float32')
+        # Create geometry
+        geometry = odl.tomo.ConeFlatGeometry(
+            angle_partition, det_partition_up, src_radius=src_radius,
+                            det_radius=det_radius, axis=[0, 0, 1])
+        FP = odl.tomo.RayTransform(reco_space_up, geometry,
+                                              use_cache=False)
+        resamp = odl.Resampling(data_space_up, data_space)
+        
+        g = resamp(FP(f_up))
+        g = data_space.element(self.add_poisson_noise(2 ** 20, g=g))
+        return g
 
+
+# %%
     def phantom_creation(self, voxels, **kwargs):
         if self.PH == "Shepp-Logan":
             # Size of the head is approximate 10 cm by 7.5 cm

@@ -76,9 +76,9 @@ class results:
         self.Ql += [li]
 # %%
 class algorithm_class:
-    def __init__(self, CT_obj):
+    def __init__(self, CT_obj, method='Name algorithm'):
         self.CT_obj = CT_obj
-        self.method = 'Name algorithm'
+        self.method = method
 
     def comp_results(self, rec, measures, var, param, t_rec):
         if hasattr(self, 'results'):

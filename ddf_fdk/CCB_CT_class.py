@@ -307,3 +307,41 @@ class CCB_CT:
         fig.show()
         if save_name is not None:
             pylab.savefig(save_name+extension, bbox_inches='tight')
+
+# %%
+    def show_xHQ(self, clim=None, save_name=None, extension='.eps',
+                     fontsize=20):
+        space = self.reco_space
+        if clim == None:
+            clim = [np.min(self.phantom.f),
+                    np.max(self.phantom.f)]
+        mid = np.shape(self.phantom.xHQ)[0] // 2
+        xy = self.phantom.xHQ[:, :, mid]
+        xz = self.phantom.xHQ[:, mid, :]
+        yz = self.phantom.xHQ[mid, :, :]
+        fig, (ax1, ax2, ax3) = pylab.subplots(1, 3, figsize=[20, 6])
+        fig.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+        ima = ax1.imshow(np.rot90(xy), clim=clim, extent=[space.min_pt[0],
+                         space.max_pt[0],space.min_pt[1], space.max_pt[1]],
+                            cmap='gray')
+        ax1.set_xlabel('x', fontsize=fontsize)
+        ax1.set_ylabel('y', fontsize=fontsize)
+        ima = ax2.imshow(np.rot90(xz), clim=clim, extent=[space.min_pt[0],
+                         space.max_pt[0],space.min_pt[2], space.max_pt[2]],
+                            cmap='gray')
+        ax2.set_xlabel('x', fontsize=fontsize)
+        ax2.set_ylabel('z', fontsize=fontsize)
+        ima = ax3.imshow(np.rot90(yz), clim=clim, extent=[space.min_pt[1],
+                         space.max_pt[1],space.min_pt[2], space.max_pt[2]],
+                            cmap='gray')
+        ax3.set_xlabel('y', fontsize=fontsize)
+        ax3.set_ylabel('z', fontsize=fontsize)
+        fig.colorbar(ima, ax=(ax1, ax2, ax3))
+        if save_name is None:
+            if self.phantom.data_type == 'simulated':
+                fig.suptitle('High quality reconstruction', fontsize=fontsize+2)
+            else:
+                fig.suptitle('Gold standard', fontsize=fontsize+2)
+        fig.show()
+        if save_name is not None:
+            pylab.savefig(save_name+extension, bbox_inches='tight')
