@@ -241,7 +241,7 @@ class phantom:
         resamp = odl.Resampling(data_space_up, data_space)
         
         g = resamp(FP(f_up))
-#        g = data_space.element(self.add_poisson_noise(2 ** 20, g=g))
+        g = data_space.element(self.add_poisson_noise(2 ** 20, g=g))
         return g
 
 
