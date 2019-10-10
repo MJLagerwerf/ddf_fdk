@@ -25,14 +25,14 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'FORBILD'
+phantom = 'Fourshape_test'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
 noise = None #['Poisson', 2 ** 8]
 det_rad = 0
-src_rad = 1
-angles = 180
+src_rad = 100
+angles = 1500
 
 data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
 
@@ -44,10 +44,15 @@ case.init_algo()
 # %%
 #    case.TFDK.optim_param()
 case.FDK.do('Ram-Lak')
+case.FDK.do('Hann')
 #case.TFDK.do(lam=1e-5)
-case.SIRT.do(100)
+#case.SIRT.do(100)
 # %% Show results
 case.table()
+case.FDK.show(0)
 case.FDK.show()
-case.SIRT.show()
+case.show_phantom()
+case.g.show()
+
+#case.SIRT.show()
 # %%    

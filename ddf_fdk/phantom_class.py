@@ -16,6 +16,7 @@ from . import SIRT_ODL_astra_backend as sirt
 from . import FDK_ODL_astra_backend as fdk
 import gc
 
+
 # %%
 def make_spheres(center, radius, value=-1):
     rad = [radius, radius, radius]
@@ -90,7 +91,7 @@ class phantom:
         self.noise = noise
         self.src_rad = src_rad
         self.det_rad = det_rad
-        if self.PH == 'Zero' and self.noise == None:
+        if self.PH == 'Zero' and self.nNoneoise == None:
             raise ValueError('Specify a noise level for this phantom')
             
         if 'load_data_g' in kwargs:
@@ -116,7 +117,7 @@ class phantom:
                 filt = np.real(np.fft.rfft(sup.ramp_filt(rs_detu)))
                 freq = 2 * np.arange(len(filt))/(rs_detu)
                 filt = filt * (np.cos(freq * np.pi / 2) ** 2)  / 2 / w_detu
-
+#                filt = filt / 2 / w_detu
                 self.xHQ = fdk.FDK_astra(gHQ, filt, 'xHQ', self.reco_space,
                                          None)
                 print(time.time() - t, 'seconds to compute the HQ rec')
