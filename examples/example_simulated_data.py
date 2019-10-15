@@ -34,7 +34,8 @@ det_rad = 0
 src_rad = 100
 angles = 1500
 
-data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
+data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad,
+                       compute_xHQ=True)
 
 ## %% Create the circular cone beam CT class
 case = ddf.CCB_CT(data_obj)#
@@ -44,15 +45,20 @@ case.init_algo()
 # %%
 #    case.TFDK.optim_param()
 case.FDK.do('Ram-Lak')
-case.FDK.do('Hann')
+rec = case.FDK.do('Hann', compute_results=False)
 #case.TFDK.do(lam=1e-5)
 #case.SIRT.do(100)
 # %% Show results
+pylab.close('all')
 case.table()
 case.FDK.show(0)
 case.FDK.show()
 case.show_phantom()
-case.g.show()
+case.show_xHQ()
+
 
 #case.SIRT.show()
 # %%    
+for i in range(10, 40, 5):
+    pylab.figure()
+    pylab.imshow()

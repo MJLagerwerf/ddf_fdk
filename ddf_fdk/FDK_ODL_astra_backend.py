@@ -34,7 +34,7 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
                                            geom.det_radius)
     elif geom == 'xHQ':
         ang = 1500
-        src_rad = 10
+        src_rad = 100
         det_rad = 0
         angles = np.linspace((1 / ang) * np.pi, (2 + 1 / ang) * np.pi, ang,
                       False)
