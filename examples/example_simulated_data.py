@@ -59,6 +59,8 @@ case.show_xHQ()
 
 #case.SIRT.show()
 # %%    
-for i in range(10, 40, 5):
+pylab.close('all')
+for i in range(40, 80, 5):
     pylab.figure()
-    pylab.imshow()
+    pylab.imshow(data_obj.xHQ[:, :, i]- rec[:, :, i])
+    pylab.colorbar()

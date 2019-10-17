@@ -12,7 +12,7 @@ import pylab
 
 from . import support_functions as sup
 
-def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
+def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None, ang_offset=0):
     # %% Create geometry
     # Make a circular scanning geometry
     ang, u, v = g.shape
@@ -26,8 +26,8 @@ def FDK_astra(g, filt, geom, reco_space, w_du, ang_freq=None):
         vecs = geom
         proj_geom = astra.create_proj_geom('cone_vec', v, u, vecs)
     elif type(geom) == odl.tomo.geometry.conebeam.ConeFlatGeometry:
-        angles = np.linspace((1 / ang) * np.pi, (2 + 1 / ang) * np.pi, ang,
-                      False)
+        angles = np.linspace((1/ ang) * np.pi + ang_offset,
+                             (2 +1 / ang) * np.pi + ang_offset, ang, False)
         w_du, w_dv = 2 * geom.detector.partition.max_pt / [u, v]
         proj_geom = astra.create_proj_geom('cone', w_dv, w_du, v, u,
                                            angles, geom.src_radius,
