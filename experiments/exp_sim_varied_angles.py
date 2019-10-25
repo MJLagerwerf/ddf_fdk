@@ -73,6 +73,38 @@ def CT(pix, phantom, angles, src_rad, noise, Exp_bin, bin_param, f_load_path,
     return CT_obj
 
 # %%
+@ex.capture
+def save_and_add_artifact(path, arr):
+    np.save(path, arr)
+    ex.add_artifact(path)
+
+@ex.capture
+def save_network(case, full_path, NW_path):
+    NW_full = h5py.File(full_path + NW_path, 'r')
+    NW = h5py.File(case.WV_path + NW_path, 'w')
+
+    NW_full.copy(str(case.NNFDK.network[-1]['nNW']), NW, name='NW')
+    NW_full.close()
+    NW.close()
+    ex.add_artifact(case.WV_path + NW_path)
+    
+@ex.capture
+def save_table(case, WV_path):
+    case.table()
+    latex_table = open(WV_path + '_latex_table.txt', 'w')
+    latex_table.write(case.table_latex)
+    latex_table.close()
+    ex.add_artifact(WV_path + '_latex_table.txt')
+
+@ex.capture
+def log_variables(results, Q, RT):
+    Q = np.append(Q, results.Q, axis=0)
+    RT = np.append(RT, results.rec_time)
+    return Q, RT
+    
+
+
+# %%
 @ex.automain
 def main(specifics):
     if not os.path.exists('AFFDK_results'):
@@ -82,69 +114,49 @@ def main(specifics):
     case = CT()
     t3 = time.time()
     print(t3 - t2, 'seconds to initialize CT object')
+    Q = np.zeros((0, 3))
+    RT = np.zeros((0))
 
-    Q = np.zeros((11, 3))
-
-    
-    np.save(case.WV_path + specifics + '_g.npy', case.g)
-    ex.add_artifact(case.WV_path + specifics + '_g.npy')
+    save_and_add_artifact(f'{case.WV_path}_g.npy', case.g)
 
     f = 'Shepp-Logan'
     LP_filts = [['Gauss', 8], ['Gauss', 5], ['Bin', 2], ['Bin', 5]]
     
     case.FDK.do(f)
-    np.save(case.WV_path + specifics + '_FDKSL_rec.npy',
-            case.FDK.results.rec_axis[-1])
-    ex.add_artifact(case.WV_path + specifics + '_FDKSL_rec.npy')
+    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec.npy',
+                          case.FDK.results.rec_axis[-1])
+
+
     
     for lp in LP_filts:
         case.FDK.filt_LP(f, lp)
         if lp[0] == 'Gauss':
-            np.save(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1]) + 
-                    '_rec.npy', case.FDK.results.rec_axis[-1])
-            ex.add_artifact(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1])
-                            + '_rec.npy')
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_GS{lp[1]}_rec.npy',
+                                  case.FDK.results.rec_axis[-1])
         elif lp[0] == 'Bin':
-            np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
-                    '_rec.npy', case.FDK.results.rec_axis[-1])
-            ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
-                            + '_rec.npy')
-    
-    Q[:5, :] = case.FDK.results.Q
-
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_BN{lp[1]}_rec.npy',
+                                  case.FDK.results.rec_axis[-1])
+    Q, RT = log_variables(case.FDK.results, Q, RT)
     print('Finished FDKs')
     
     
-    
     case.TFDK.do(lam='optim')
-    np.save(case.WV_path + specifics + '_TFDK_rec.npy',
-            case.TFDK.results.rec_axis[-1])
-    ex.add_artifact(case.WV_path + specifics + '_TFDK_rec.npy')
-    Q[6, :] = case.TFDK.results.Q
+    save_and_add_artifact(f'{case.WV_path}_TFDK_rec.npy',
+                          case.TFDK.results.rec_axis[-1])
+    Q, RT = log_variables(case.TFDK.results, Q, RT)
     
-
-    np.save(case.WV_path + specifics + '_AtA.npy', case.AtA)
-    ex.add_artifact(case.WV_path + specifics + '_AtA.npy')
-    np.save(case.WV_path + specifics + '_Atg.npy', case.Atg)
-    ex.add_artifact(case.WV_path + specifics + '_Atg.npy')
-    np.save(case.WV_path + specifics + '_DDC_norm.npy', case.DDC_norm)
-    ex.add_artifact(case.WV_path + specifics + '_DDC_norm.npy')
+    
+    save_and_add_artifact(f'{case.WV_path}_AtA.npy', case.AtA)
+    save_and_add_artifact(f'{case.WV_path}_Atg.npy', case.Atg)
+    save_and_add_artifact(f'{case.WV_path}_DDC_norm.npy', case.DDC_norm)
 
 
-    print('Finished AF-FDK')
+    print('Finished MR-FDK')
 
+    save_table(case, WV_path)
 
-
-
-    case.table()
-    latex_table = open(case.WV_path + specifics + '_latex_table.txt', 'w')
-    latex_table.write(case.table_latex)
-    latex_table.close()
-    ex.add_artifact(case.WV_path + specifics + '_latex_table.txt')
-
-
-    np.save(case.WV_path + specifics + '_Q.npy', Q)
-    ex.add_artifact(case.WV_path + specifics + '_Q.npy')
     case = None
     gc.collect()
     return Q

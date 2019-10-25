@@ -117,7 +117,6 @@ class phantom:
                 filt = np.real(np.fft.rfft(sup.ramp_filt(rs_detu)))
                 freq = 2 * np.arange(len(filt))/(rs_detu)
                 filt = filt * (np.cos(freq * np.pi / 2) ** 2)  / 2 / w_detu
-#                filt = filt / 2 / w_detu
                 self.xHQ = fdk.FDK_astra(gHQ, filt, 'xHQ', self.reco_space,
                                          None)
                 print(time.time() - t, 'seconds to compute the HQ rec')

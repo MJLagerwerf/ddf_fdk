@@ -25,42 +25,39 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'Fourshape_test'
+phantom = 'Cube'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
 noise = None #['Poisson', 2 ** 8]
 det_rad = 0
-src_rad = 100
-angles = 1500
+src_rad = 10
+angles = 500
 
-data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad,
-                       compute_xHQ=True)
+data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
 
 ## %% Create the circular cone beam CT class
 case = ddf.CCB_CT(data_obj)#
 ## Initialize the algorithms (FDK, SIRT)
 case.init_algo()
-#case.init_DDF_FDK()
+case.init_DDF_FDK()
 # %%
-#    case.TFDK.optim_param()
-case.FDK.do('Ram-Lak')
-rec = case.FDK.do('Hann', compute_results=False)
-#case.TFDK.do(lam=1e-5)
-#case.SIRT.do(100)
+
+rec_FDK = case.FDK.do('Ram-Lak', compute_results=False)
+rec_TFDK = case.TFDK.do(lam=0, compute_results=False)
+
+case.TFDK.do(lam='optim')
+
 # %% Show results
 pylab.close('all')
 case.table()
-case.FDK.show(0)
 case.FDK.show()
+case.TFDK.show()
 case.show_phantom()
-case.show_xHQ()
 
-
-#case.SIRT.show()
+# %%
+(data_obj.f - rec_FDK).show()
+(data_obj.f - rec_TFDK).show()
 # %%    
-pylab.close('all')
-for i in range(40, 80, 5):
-    pylab.figure()
-    pylab.imshow(data_obj.xHQ[:, :, i]- rec[:, :, i])
-    pylab.colorbar()
+#pylab.close('all')
+#pylab.figure()

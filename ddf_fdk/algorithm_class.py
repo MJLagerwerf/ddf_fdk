@@ -371,7 +371,7 @@ class TFDK_class(AFFDK_class):
         if np.argmin(L1D) <= 7:
             self.optim_lam = lamTr[np.argmin(L1D)]
         else:
-            self.optim_lam = lamTf[np.argmin(L1D) - 7]
+            self.optim_lam = lamTf[np.argmin(L1D) - 8]
         DO, CTo, g_LR = None, None, None
         gc.collect()
         return self.optim_lam
