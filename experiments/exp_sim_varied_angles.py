@@ -13,7 +13,7 @@ import gc
 import pylab
 import os
 import time
-
+ddf.import_astra_GPU()
 
 ex = Experiment()
 # %%

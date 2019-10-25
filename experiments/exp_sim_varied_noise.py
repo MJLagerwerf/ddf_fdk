@@ -14,7 +14,7 @@ import gc
 import pylab
 import os
 import time
-
+ddf.import_astra_GPU()
 
 ex = Experiment()
 # %%
@@ -73,7 +73,6 @@ def CT(pix, phantom, angles, src_rad, noise, Exp_bin, bin_param, f_load_path,
     CT_obj.init_DDF_FDK(bin_param, Exp_bin)
     return CT_obj
 
-# %%
 # %%
 @ex.capture
 def save_and_add_artifact(path, arr):
