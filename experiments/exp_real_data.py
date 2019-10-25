@@ -23,8 +23,8 @@ ex = Experiment()
 @ex.config
 def cfg():
     it_i = 1
-    bpath = '/export/scratch3/lagerwer/data/FleXray/'
-    load_path = f'{bpath}walnuts_10MAY/walnut_21/'
+    bpath ='/bigstore/lagerwer/data/FleXray/'
+    load_path = f'{bpath}pomegranate1_02MAR/'
     
     dsets = ['noisy', 'good']
     dset = dsets[it_i]
@@ -62,8 +62,7 @@ def cfg():
 
 # %%  
 @ex.capture
-def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param, nTrain, nTD, nVal,
-       nVD, bpath):
+def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param):
     dataset = ddf.load_and_preprocess_real_data(load_path, dset, sc)
     meta = ddf.load_meta(load_path + dset + '/', sc)
     pix_size = meta['pix_size']

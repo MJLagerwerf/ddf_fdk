@@ -156,7 +156,7 @@ def main(specifics):
 
     print('Finished MR-FDK')
 
-    save_table(case, WV_path)
+    save_table(case, case.WV_path)
 
     case = None
     gc.collect()
