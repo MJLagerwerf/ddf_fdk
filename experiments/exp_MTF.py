@@ -25,13 +25,14 @@ def cfg():
     # Specific phantom
     phantom = 'cylinder'
     # Number of angles
-    angles = 500
+    angles = 1500
     noise = None
 
     # Source radius
     src_rad = 10
 
-    loadp = '/export/scratch2/lagerwer/AFFDK_results/resubmission/sim_varied_noise'
+#    loadp = '/export/scratch2/lagerwer/AFFDK_results/resubmission/sim_varied_noise'
+    loadp = '/export/scratch2/lagerwer/sim_varied_noise/'
     f_load_path = None
     g_load_path = None
 
