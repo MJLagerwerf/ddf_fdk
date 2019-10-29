@@ -12,37 +12,23 @@ import pylab
 import gc 
 
 # %%
-v = 1024
-voxels = [v, v, v]
-angles = 360
-
-phantom = 'Cluttered sphere'
-# Source to center of rotation radius
-src_rad = 10
-det_rad = 0
-
-noise = None
-
-# Create a data object
 path_base = '/export/scratch2/lagerwer/AFFDK_results/resubmission/'
-#path_base = '/export/scratch2/lagerwer/ddf_fdk/experiments/AFFDK_results/'
-path1 = path_base + 'sim_varied_noise/1/I0256_' 
-path2 = path_base + 'sim_varied_noise/10/I01048576_'
 
-# %%
-x1 = ddf.make_filt_coeff_from_path(path1, 0.001)
-x2 = ddf.make_filt_coeff_from_path(path2, 1e-6)
+exp = 'MTF/3/'
+lp_MTF = ['TFDK_NOI1.npy', 'TFDK_NOI2.npy', 'FDKRL.npy', 'FDKSL.npy',
+          'FDKSL_GS8.npy', 'FDKSL_GS5.npy', 'FDKSL_BN2.npy','FDKSL_BN5.npy']
 
-
-# %%
-
-filts = [x1, x2, 'Ram-Lak', 'Shepp-Logan', ['Gauss', 8], ['Gauss', 5],
-         ['Bin', 2], ['Bin', 5]]
-
-#MTF_list = ddf.MTF_x(filts, voxels, angles, src_rad, det_rad)
-MTF_list = np.load(path_base + 'MTF_list.npy')
-#np.save(path_base + 'MTF_list', MTF_list)
-
+size = 250
+x = np.arange(size)
+MTF_list = np.zeros((len(lp_MTF), size))
+filt = [1/64, 6/64, 15/64, 20/64, 15/64, 6/ 64, 1/64]
+for i in range(len(lp_MTF)):
+    MTF_list[i, :] = np.convolve(np.load(f'{path_base}{exp}MTF_{lp_MTF[i]}'),
+            filt, 'valid')
+    MTF_list[i, :] /= MTF_list[i, 0] 
+#    if i in [2, 3, 6, 7]:
+#        MTF = np.load(f'{path_base}MTF_{lp_MTF[i]}')    
+#        MTF_list[i, :] = np.poly1d(np.polyfit(x, MTF, deg=6))(x)
 # %%
 pylab.close('all')
 pylab.rcParams.update({'font.size': 20})
@@ -70,8 +56,8 @@ ax2.set_xlabel('$\omega_x>0$')
 pylab.draw()
 ax2.legend(loc='center left', bbox_to_anchor=(.85, 0.5))
 
-        
-fig.savefig(path_base + '/figures/MTF_comparison.eps', bbox_inches='tight')
+
+fig.savefig(path_base + '/figures/MTF_comparison.pdf', bbox_inches='tight')
 #fig.savefig(path_base + '/MTF_comparison.eps', bbox_inches='tight')
 
         

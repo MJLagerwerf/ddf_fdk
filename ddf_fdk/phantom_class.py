@@ -41,16 +41,18 @@ def clip_circle(size, img):
     outCircle = circle > bnd
     img[outCircle] = 0
 
-def clip_cylinder(size, img):
+def clip_cylinder(size, img, scale=1):
     xx, yy = np.mgrid[:size, :size]
     mid = (size - 1) / 2
     circle = (xx - mid) ** 2 + (yy - mid) ** 2
     xx, yy = None, None
-    bnd = size ** 2 / 4
+    bnd = size ** 2 / 4 * scale
     outCircle = circle > bnd
     img[:, :, :size // 8] = 0
     img[:, :, 7 * size // 8:] = 0
     img[outCircle] = 0
+    
+    
 # %%
 def FP_astra(f, reco_space, geom, factor):
     f = np.asarray(np.transpose(f, axes=(2, 0, 1)))
@@ -196,6 +198,9 @@ class phantom:
 #            self.g = resamp(FP_astra(f_up, reco_space_up, self.geometry,
 #                                     factor))
             self.g = resamp(FP(f_up))
+            if self.PH == 'cylinder':
+                g_av = np.mean(self.g, axis=0)
+                self.g = resamp.range.element(np.asarray([g_av] * self.angles))
             if self.noise == None:
                 pass
             elif self.noise[0] == 'Gaussian':
@@ -247,6 +252,23 @@ class phantom:
 
 # %%
     def phantom_creation(self, voxels, **kwargs):
+        if self.PH == 'cylinder':
+             # Size of the head is approximate 10 cm by 7.5 cm
+            self.volumesize = np.array([5, 5, 5], dtype='float32')
+            # Scale the detector correctly
+            self.detecsize = np.array([2 * self.volumesize[0], 
+                                       self.volumesize[1]])
+            # Make the reconstruction space
+            reco_space = odl.uniform_discr(min_pt=-self.volumesize,
+                                           max_pt=self.volumesize,
+                                            shape=voxels, dtype='float32',
+                                            interp='linear')
+            f = np.ones(voxels)
+            clip_cylinder(voxels[0], f, scale=0.4)
+            f = reco_space.element(f) * .22
+            
+            return reco_space, f
+        
         if self.PH == "Shepp-Logan":
             # Size of the head is approximate 10 cm by 7.5 cm
             self.volumesize = np.array([5, 5, 5], dtype='float32')
