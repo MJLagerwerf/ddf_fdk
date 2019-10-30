@@ -14,18 +14,19 @@ import gc
 # %%
 path_base = '/export/scratch2/lagerwer/AFFDK_results/resubmission/'
 
-exp = 'MTF/3/'
+exp = 'MTF/1/'
 lp_MTF = ['TFDK_NOI1.npy', 'TFDK_NOI2.npy', 'FDKRL.npy', 'FDKSL.npy',
           'FDKSL_GS8.npy', 'FDKSL_GS5.npy', 'FDKSL_BN2.npy','FDKSL_BN5.npy']
 
-size = 250
+size = 254
 x = np.arange(size)
 MTF_list = np.zeros((len(lp_MTF), size))
-filt = [1/64, 6/64, 15/64, 20/64, 15/64, 6/ 64, 1/64]
+filt = [1/4, 1/2, 1/4]
 for i in range(len(lp_MTF)):
     MTF_list[i, :] = np.convolve(np.load(f'{path_base}{exp}MTF_{lp_MTF[i]}'),
             filt, 'valid')
     MTF_list[i, :] /= MTF_list[i, 0] 
+#    MTF_list[i, :] = np.load(f'{path_base}{exp}MTF_{lp_MTF[i]}')
 #    if i in [2, 3, 6, 7]:
 #        MTF = np.load(f'{path_base}MTF_{lp_MTF[i]}')    
 #        MTF_list[i, :] = np.poly1d(np.polyfit(x, MTF, deg=6))(x)
