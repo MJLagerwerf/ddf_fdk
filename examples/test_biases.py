@@ -51,7 +51,7 @@ case = ddf.CCB_CT(data_obj)#
 case.init_algo()
 case.init_DDF_FDK()
 case.TFDK.do(lam='optim')
-x_FB = case.TFDK.results.var[-1]
+x_FB = case.TFDK.results.var[-1] * case.filter_space.weighting.const
 
 # %%
 CS_T = np.zeros((nTests, pix))
@@ -89,7 +89,6 @@ for i in tqdm(range(nTests)):
     case.init_DDF_FDK()
     case.TFDK.do(lam='optim')
     x = case.TFDK.results.var[-1]
-
     if i == 0:
         rec_RL = case.FDK.do('Ram-Lak', compute_results=False)
         rec_G8 = case.FDK.filt_LP('Shepp-Logan', ['Gauss', 8],
@@ -97,6 +96,7 @@ for i in tqdm(range(nTests)):
         rec_B5 = case.FDK.filt_LP('Shepp-Logan', ['Bin', 5],
                                compute_results=False)
         rec_T = case.FDK_bin(x)
+        x_FB /= case.filter_space.weighting.const
         rec_FB = case.FDK_bin(x_FB)
         add_results(CS_RL, LS_RL, rec_RL, i)
         add_results(CS_G8, LS_G8, rec_G8, i)
@@ -183,7 +183,7 @@ sd_recs_LS = [compute_sd(CS_RL, rec_RL[pix // 2, pix //2, :]),
 plot_slice(GT_LS, av_recs_LS, sd_recs_LS, meths)
 
 # %%
-path = '/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/'
+path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/'
 if not os.path.exists(path):
     os.makedirs(path)
 save_results(rec_RL, CS_RL, LS_RL, path, 'RL')
