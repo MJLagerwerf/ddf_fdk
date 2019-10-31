@@ -144,19 +144,22 @@ def main(specifics):
     
     
     case.TFDK.do(lam='optim')
-    save_and_add_artifact(f'{case.WV_path}_TFDK_rec.npy',
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec.npy',
                           case.TFDK.results.rec_axis[-1])
     Q, RT = log_variables(case.TFDK.results, Q, RT)
     
     
-    save_and_add_artifact(f'{case.WV_path}_AtA.npy', case.AtA)
-    save_and_add_artifact(f'{case.WV_path}_Atg.npy', case.Atg)
-    save_and_add_artifact(f'{case.WV_path}_DDC_norm.npy', case.DDC_norm)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_AtA.npy', case.AtA)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_Atg.npy', case.Atg)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy',
+                          case.DDC_norm)
 
+    save_and_add_artifact(f'{case.WV_path}{specifics}_Q.npy', Q)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_RT.npy', RT)
 
     print('Finished MR-FDK')
 
-    save_table(case, case.WV_path)
+    save_table(case, f'{case.WV_path}{specifics}')
 
     case = None
     gc.collect()
