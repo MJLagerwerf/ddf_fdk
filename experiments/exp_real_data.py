@@ -55,7 +55,7 @@ def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param, offset):
     det_rad = meta['o2d']
     
     data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,
-                 zoom=True, offset)
+                 zoom=True, offset=offset)
 
     CT_obj = ddf.CCB_CT(data_obj)
     CT_obj.init_algo()
