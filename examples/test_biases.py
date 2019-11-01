@@ -11,7 +11,7 @@ import odl
 import numpy as np
 import ddf_fdk as ddf
 import astra
-ddf.import_astra_GPU()
+#ddf.import_astra_GPU()
 #import real_data_class as RD
 import time
 import pylab
