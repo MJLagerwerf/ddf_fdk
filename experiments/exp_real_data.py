@@ -37,32 +37,17 @@ def cfg():
     f_load_path = None
     g_load_path = None
     
-    # Noise specifics
-    # Should we retrain the networks?
-    retrain = True
-    # Total number of voxels used for training
-    nVox = 1e6
-    nD = 10
-    # Number of voxels used for training, number of datasets used for training
-    nTrain = nVox
-    nTD = nD
-    # Number of voxels used for validation, number of datasets used for validation
-    nVal = nVox
-    nVD = nD
-    
     # Specifics for the expansion operator
     Exp_bin = 'linear'
     bin_param = 2
 
-    
-    filts = ['Ram-Lak', 'Hann']
     PH = 'pom1'
     specifics = PH + '_' + dset
     offset = 1.26/360 * 2 * np.pi
 
 # %%  
 @ex.capture
-def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param):
+def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param, offset):
     dataset = ddf.load_and_preprocess_real_data(load_path, dset, sc)
     meta = ddf.load_meta(load_path + dset + '/', sc)
     pix_size = meta['pix_size']
@@ -70,7 +55,7 @@ def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param):
     det_rad = meta['o2d']
     
     data_obj = ddf.real_data(dataset, pix_size, src_rad, det_rad, ang_freq,
-                 zoom=True)
+                 zoom=True, offset)
 
     CT_obj = ddf.CCB_CT(data_obj)
     CT_obj.init_algo()
@@ -142,7 +127,8 @@ def main(specifics):
     
     save_and_add_artifact(f'{case.WV_path}{specifics}_AtA.npy', case.AtA)
     save_and_add_artifact(f'{case.WV_path}{specifics}_Atg.npy', case.Atg)
-    save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy', case.DDC_norm)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy',
+                          case.DDC_norm)
 
     save_and_add_artifact(f'{case.WV_path}{specifics}_Q.npy', Q)
     save_and_add_artifact(f'{case.WV_path}{specifics}_RT.npy', RT)
