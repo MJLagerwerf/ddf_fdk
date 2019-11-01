@@ -47,13 +47,16 @@ def import_astra_GPU():
 class working_var_map:
     def __init__(self):
         base_WV_path = 'python_data/working_vars'
-        _, temp_name = mkstemp()
+        file, temp_name = mkstemp()
         self.WV_path = base_WV_path + temp_name + '/'
         os.makedirs(self.WV_path)
+        os.close(file)
+        del file, temp_name
 
 
     def __del__(self):
         shutil.rmtree(self.WV_path, ignore_errors=True)
+        
 # %%
 class SymOp(odl.Operator):
     def __init__(self, dom, ran):

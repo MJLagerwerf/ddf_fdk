@@ -127,8 +127,7 @@ for i in tqdm(range(nTests)):
         add_results(CS_FB, LS_FB, rec, i)
         rec_FB += rec
 
-    case = None
-    data_obj = None
+    del case, data_obj
     gc.collect()
 rec_RL /= nTests
 rec_G8 /= nTests
