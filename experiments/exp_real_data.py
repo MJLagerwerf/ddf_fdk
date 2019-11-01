@@ -16,7 +16,7 @@ from sacred.observers import FileStorageObserver
 import gc
 import os
 import time
-
+ddf.import_astra_GPU()
 ex = Experiment()
 
 # %%
