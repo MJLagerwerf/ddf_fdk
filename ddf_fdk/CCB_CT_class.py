@@ -35,6 +35,8 @@ class CCB_CT:
         self.magn = self.src_rad / (self.src_rad + self.det_rad)
         self.data_struct = data_struct
         self.rec_methods = []
+        if hasattr(data_obj, 'offset'):
+            self.offset = data_obj.offset
         # %% If we need a data structure, make one:
         self.WV_obj = sup.working_var_map()
         self.WV_path = self.WV_obj.WV_path

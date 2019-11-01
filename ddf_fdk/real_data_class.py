@@ -16,12 +16,13 @@ import gc
 
 class real_data:
     def __init__(self, dataset, pix_size, src_rad, det_rad, ang_freq,
-                 vox=None, vecs=None, zoom=False):
+                 vox=None, vecs=None, zoom=False, offset=0):
         self.data_type = 'real'
         # %% load data
         self.vecs = vecs
         self.ang_freq = ang_freq
         self.dataset = dataset
+        self.offset = offset
         if type(dataset) == dict:
             g_vec = np.load(dataset['g'])
             # %% adapt data
@@ -73,7 +74,8 @@ class real_data:
             self.mask_name = dataset['mask']
 
         # Make a circular scanning geometry
-        angle_partition = odl.uniform_partition(0, 2 * np.pi, self.angles)
+        angle_partition = odl.uniform_partition(offset, 2 * np.pi + offset,
+                                                self.angles)
 
         # Make a flat detector space
         det_partition = odl.uniform_partition(-self.detecsize,

@@ -178,6 +178,12 @@ class FDK_class(algorithm_class):
 
     def do(self, filt_type, compute_results=True,
            measures=['MSE', 'MAE', 'SSIM'], astra=True):
+        if hasattr(self.CT_obj, 'offset'):
+            offset = self.CT_obj.offset
+            if astra == False:
+                raise ValueError('You need ASTRA to do a rotational offset')
+        else:
+            offset = 0
         t = time.time()
         hf = self.FDK_filt(filt_type)
         if astra:
@@ -185,7 +191,7 @@ class FDK_class(algorithm_class):
                     FDK_meth.FDK_astra(self.CT_obj.g, hf,
                                        self.CT_obj.geometry,
                                        self.CT_obj.reco_space,
-                                       self.CT_obj.w_detu))
+                                       self.CT_obj.w_detu, ang_offset=offset))
         else:
             rec = self.FDK_hf(hf)
         t_rec = time.time() - t

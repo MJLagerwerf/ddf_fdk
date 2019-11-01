@@ -22,7 +22,7 @@ ex = Experiment()
 # %%
 @ex.config
 def cfg():
-    it_i = 1
+    it_i = 0
     bpath ='/bigstore/lagerwer/data/FleXray/'
     load_path = f'{bpath}pomegranate1_02MAR/'
     
@@ -58,7 +58,7 @@ def cfg():
     filts = ['Ram-Lak', 'Hann']
     PH = 'pom1'
     specifics = PH + '_' + dset
-
+    offset = 1.26/360 * 2 * np.pi
 
 # %%  
 @ex.capture
@@ -83,16 +83,6 @@ def CT(load_path, dset, sc, ang_freq, Exp_bin, bin_param):
 def save_and_add_artifact(path, arr):
     np.save(path, arr)
     ex.add_artifact(path)
-
-@ex.capture
-def save_network(case, full_path, NW_path):
-    NW_full = h5py.File(full_path + NW_path, 'r')
-    NW = h5py.File(case.WV_path + NW_path, 'w')
-
-    NW_full.copy(str(case.NNFDK.network[-1]['nNW']), NW, name='NW')
-    NW_full.close()
-    NW.close()
-    ex.add_artifact(case.WV_path + NW_path)
     
 @ex.capture
 def save_table(case, WV_path):
@@ -145,20 +135,23 @@ def main(specifics):
     
     
     case.TFDK.do(lam='optim')
-    save_and_add_artifact(f'{case.WV_path}_TFDK_rec.npy',
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec.npy',
                           case.TFDK.results.rec_axis[-1])
     Q, RT = log_variables(case.TFDK.results, Q, RT)
     
     
-    save_and_add_artifact(f'{case.WV_path}_AtA.npy', case.AtA)
-    save_and_add_artifact(f'{case.WV_path}_Atg.npy', case.Atg)
-    save_and_add_artifact(f'{case.WV_path}_DDC_norm.npy', case.DDC_norm)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_AtA.npy', case.AtA)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_Atg.npy', case.Atg)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy', case.DDC_norm)
 
+    save_and_add_artifact(f'{case.WV_path}{specifics}_Q.npy', Q)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_RT.npy', RT)
 
     print('Finished MR-FDK')
 
-    save_table(case, WV_path)
+    save_table(case, f'{case.WV_path}{specifics}')
 
     case = None
     gc.collect()
     return Q
+
