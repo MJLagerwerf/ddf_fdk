@@ -346,7 +346,8 @@ class TFDK_class(AFFDK_class):
                                   self.CT_obj.det_rad, load_data_g=g_LR)
         elif self.CT_obj.phantom.data_type == 'real':
             DO = real_data(g_LR, self.CT_obj.pix_size, self.CT_obj.src_rad,
-                           self.CT_obj.det_rad, self.CT_obj.angles, ang_freq=1)
+                           self.CT_obj.det_rad, ang_freq=1, zoom=True,
+                           offset=self.CT_obj.offset)
         
         expansion_op = 'linear'
         bin_param = 2
