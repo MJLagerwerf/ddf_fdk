@@ -344,11 +344,12 @@ class TFDK_class(AFFDK_class):
             DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
                                   self.CT_obj.noise, self.CT_obj.src_rad,
                                   self.CT_obj.det_rad, load_data_g=g_LR)
+        # ! ! ! This function is hardcoded for the pomegranate dataset atm
         elif self.CT_obj.phantom.data_type == 'real':
             DO = real_data(g_LR, self.CT_obj.pix_size, self.CT_obj.src_rad,
-                           self.CT_obj.det_rad, ang_freq=1, zoom=True,
-                           offset=self.CT_obj.offset)
-        
+                           self.CT_obj.det_rad,
+                           ang_freq=self.CT_obj.phantom.ang_freq,
+                           zoom=True, offset=self.CT_obj.offset)
         expansion_op = 'linear'
         bin_param = 2
         # Initialize operators and algorithms

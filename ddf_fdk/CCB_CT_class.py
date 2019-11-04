@@ -239,6 +239,8 @@ class CCB_CT:
 
 
 # %% Compute a Golden Standard reconstruction on low resolution
+        
+    # ! ! ! This function is hardcoded for the pomegranate dataset atm
     def compute_GS(self, factor=4, it=200):
         g_LR = sup.integrate_data(self.g, factor)
         if self.phantom.data_type == 'simulated':
@@ -247,7 +249,8 @@ class CCB_CT:
                         self.src_rad, self.det_rad, load_data_g=g_LR)
         elif self.phantom.data_type == 'real':
             DO = RD.real_data(g_LR, self.pix_size, self.src_rad, self.det_rad,
-                              self.angles, ang_freq=1)
+                              ang_freq=self.phantom.ang_freq, zoom=True,
+                              self.offset)
         CTo = CCB_CT(DO, data_struct=False)
         CTo.init_algo()
         self.GS = CTo.SIRT_NN.do(niter=it, compute_results=False)

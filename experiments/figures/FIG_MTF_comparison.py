@@ -39,7 +39,7 @@ fig, (ax2) = pylab.subplots(1, 1, figsize=[13.5, 8])
 RM = ['MR filter$^{NOI, 1}$','MR filter$^{NOI, 2}$', 'Ram-Lak', 'Shepp-Logan', 
         'SL + Gauss$_{\sigma=8}$', 'SL + Gauss$_{\sigma=5}$',
         'SL + Bin$_{N=2}$', 'SL + Bin$_{N=5}$']
-clr = ['C3', 'C3', 'gold', 'C2', 'C1', 'C6', 'C9', 'C4']
+clr = ['C3', 'C3', 'gold', 'C2', 'C1', 'C6', 'C4', 'C9']
 
 
 for i in range(len(RM)):
