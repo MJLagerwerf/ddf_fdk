@@ -250,7 +250,7 @@ class CCB_CT:
         elif self.phantom.data_type == 'real':
             DO = RD.real_data(g_LR, self.pix_size, self.src_rad, self.det_rad,
                               ang_freq=self.phantom.ang_freq, zoom=True,
-                              self.offset)
+                              offset=self.offset)
         CTo = CCB_CT(DO, data_struct=False)
         CTo.init_algo()
         self.GS = CTo.SIRT_NN.do(niter=it, compute_results=False)
