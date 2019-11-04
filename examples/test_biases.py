@@ -127,7 +127,7 @@ for i in tqdm(range(nTests)):
         add_results(CS_FB, LS_FB, rec, i)
         rec_FB += rec
 
-    del case, data_obj
+
     gc.collect()
 rec_RL /= nTests
 rec_G8 /= nTests
@@ -156,6 +156,15 @@ def plot_slice(GT, av_recs, sd_recs, meths, path=None):
     pylab.legend()
 
 # %%  
+path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/'
+if not os.path.exists(path):
+    os.makedirs(path)
+save_results(rec_RL, CS_RL, LS_RL, path, 'RL')
+save_results(rec_G8, CS_G8, LS_G8, path, 'G8')
+save_results(rec_B5, CS_B5, LS_B5, path, 'B5')
+save_results(rec_T, CS_T, LS_T, path, 'T')
+save_results(rec_FB, CS_FB, LS_FB, path, 'FB')
+
 pylab.close('all')
 meths = ['RL', 'G8', 'B5', 'T', 'FB']
 # %%
@@ -185,14 +194,6 @@ sd_recs_LS = [compute_sd(CS_RL, rec_RL[pix // 2, pix //2, :]),
 plot_slice(GT_LS, av_recs_LS, sd_recs_LS, meths)
 
 # %%
-path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/'
-if not os.path.exists(path):
-    os.makedirs(path)
-save_results(rec_RL, CS_RL, LS_RL, path, 'RL')
-save_results(rec_G8, CS_G8, LS_G8, path, 'G8')
-save_results(rec_B5, CS_B5, LS_B5, path, 'B5')
-save_results(rec_T, CS_T, LS_T, path, 'T')
-save_results(rec_FB, CS_FB, LS_FB, path, 'FB')
 
 
 # %%
