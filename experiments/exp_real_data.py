@@ -23,10 +23,10 @@ ex = Experiment()
 @ex.config
 def cfg():
     it_i = 0
-#    bpath ='/bigstore/lagerwer/data/FleXray/'
-    bpath = '/export/scratch2/lagerwer/data/FleXray/'
-    load_path = f'{bpath}walnuts_10MAY/walnut_01/'
-#    load_path = f'{bpath}pomegranate1_02MAR/'
+    bpath ='/bigstore/lagerwer/data/FleXray/'
+#    bpath = '/export/scratch2/lagerwer/data/FleXray/'
+#    load_path = f'{bpath}walnuts_10MAY/walnut_01/'
+    load_path = f'{bpath}pomegranate1_02MAR/'
     
     dsets = ['noisy', 'good']
     dset = dsets[it_i]
