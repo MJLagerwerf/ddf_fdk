@@ -31,7 +31,7 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'cylinder ramp'
+phantom = 'FORBILD'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -58,10 +58,10 @@ def add_results(CS, CS2, LS, rec, it):
     LS[it, :] = rec[mid, mid, :]
 
 def save_results(av_rec, CS, CS2, LS, path, meth):
-    np.save(f'{path}rec_{meth}', av_rec)
-    np.save(f'{path}CS_{meth}', CS)
-    np.save(f'{path}CS2_{meth}', CS2)
-    np.save(f'{path}LS_{meth}', LS)
+    np.save(f'{path}_rec_{meth}', av_rec)
+    np.save(f'{path}_CS_{meth}', CS)
+    np.save(f'{path}_CS2_{meth}', CS2)
+    np.save(f'{path}_LS_{meth}', LS)
 
 
 # %%
