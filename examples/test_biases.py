@@ -32,6 +32,12 @@ voxels = [pix, pix, pix]
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
 phantom = 'FORBILD'
+if phantom == 'FORBILD':
+    PH = 'FB'
+if phantom == 'cylinder ramp':
+    PH = 'CR'    
+if phantom == 'cylinder':
+    PH = 'CC'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -146,10 +152,10 @@ def plot_slice(GT, av_recs, sd_recs, meths, path=None):
 path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/'
 if not os.path.exists(path):
     os.makedirs(path)
-save_results(rec_RL, CS[0, :, :], CS2[0, :, :], LS[0, :, :], path, 'RL')
-save_results(rec_RL, CS[1, :, :], CS2[1, :, :], LS[1, :, :], path, 'G8')
-save_results(rec_RL, CS[2, :, :], CS2[2, :, :], LS[2, :, :], path, 'B5')
-save_results(rec_RL, CS[3, :, :], CS2[3, :, :], LS[3, :, :], path, 'T')
+save_results(rec_RL, CS[0, :, :], CS2[0, :, :], LS[0, :, :], f'{path}{PH}', 'RL')
+save_results(rec_RL, CS[1, :, :], CS2[1, :, :], LS[1, :, :], f'{path}{PH}', 'G8')
+save_results(rec_RL, CS[2, :, :], CS2[2, :, :], LS[2, :, :], f'{path}{PH}', 'B5')
+save_results(rec_RL, CS[3, :, :], CS2[3, :, :], LS[3, :, :], f'{path}{PH}', 'T')
 #save_results(rec_FB, CS_FB, LS_FB, path, 'FB')
 
 pylab.close('all')
