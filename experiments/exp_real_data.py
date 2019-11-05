@@ -97,7 +97,7 @@ def main(specifics):
     print(t3 - t2, 'seconds to initialize CT object')
     Q = np.zeros((0, 3))
     RT = np.zeros((0))
-
+#
     save_and_add_artifact(f'{case.WV_path}_g.npy', case.g)
 
     f = 'Shepp-Logan'
@@ -120,7 +120,8 @@ def main(specifics):
     Q, RT = log_variables(case.FDK.results, Q, RT)
     print('Finished FDKs')
     
-    
+
+    print('fixed the optimal param')
     case.TFDK.do(lam='optim')
     save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec.npy',
                           case.TFDK.results.rec_axis[-1])

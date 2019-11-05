@@ -269,6 +269,32 @@ class phantom:
             
             return reco_space, f
         
+        if self.PH == 'cylinder ramp':
+             # Size of the head is approximate 10 cm by 7.5 cm
+            self.volumesize = np.array([5, 5, 5], dtype='float32')
+            # Scale the detector correctly
+            self.detecsize = np.array([2 * self.volumesize[0], 
+                                       self.volumesize[1]])
+            # Make the reconstruction space
+            reco_space = odl.uniform_discr(min_pt=-self.volumesize,
+                                           max_pt=self.volumesize,
+                                            shape=voxels, dtype='float32',
+                                            interp='linear')
+            f = np.ones(voxels)
+            clip_cylinder(voxels[0], f, scale=0.4)
+            size = voxels[0]
+            xx, yy = np.mgrid[:size, :size]
+            mid = (size - 1) / 2
+            circle = (xx - mid) ** 2 + (yy - mid) ** 2 
+            bnd = size ** 2 / 4 * 0.4
+            circle = np.sqrt(bnd) - np.sqrt(circle)
+            circle /= np.max(circle)
+
+            for i in range(size):
+                f[:, :, i] = (f[:, :,i] * circle) 
+            f = reco_space.element(f) * .22
+            return reco_space, f
+        
         if self.PH == "Shepp-Logan":
             # Size of the head is approximate 10 cm by 7.5 cm
             self.volumesize = np.array([5, 5, 5], dtype='float32')

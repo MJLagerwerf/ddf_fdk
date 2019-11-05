@@ -410,14 +410,20 @@ class SFDK_class(AFFDK_class):
         else:
             return rec
 
-    def optim_param(self, factor=4):
+    def optim_param(self, factor=4, it=200):
         # Create low resolution problem
-        self.CT_obj.compute_GS()
+        self.CT_obj.compute_GS(factor, it)
         voxels_LR = np.asarray(self.CT_obj.phantom.voxels) // factor
-        g_LR = sup.subsamp_data(self.CT_obj.g)
-        DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
-                              self.CT_obj.noise, self.CT_obj.src_rad,
-                              self.CT_obj.det_rad, load_data_g=g_LR)
+        g_LR = sup.subsamp_data(self.CT_obj.g, factor)
+        if self.CT_obj.phantom.data_type == 'simulated':
+            DO = phantom(voxels_LR, self.CT_obj.PH, self.CT_obj.angles,
+                                  self.CT_obj.noise, self.CT_obj.src_rad,
+                                  self.CT_obj.det_rad, load_data_g=g_LR)
+        # ! ! ! This function is hardcoded for the pomegranate dataset atm
+        elif self.CT_obj.phantom.data_type == 'real':
+            DO = real_data(g_LR, self.CT_obj.pix_size, self.CT_obj.src_rad,
+                           self.CT_obj.det_rad, ang_freq=1,
+                           zoom=True, offset=self.CT_obj.offset)
         expansion_op = 'linear'
         bin_param = 2
         # Initialize operators and algorithms
@@ -447,7 +453,7 @@ class SFDK_class(AFFDK_class):
         if np.argmin(L1D) <= 7:
             self.optim_lam = lamTr[np.argmin(L1D)]
         else:
-            self.optim_lam = lamTf[np.argmin(L1D) - 7]
+            self.optim_lam = lamTf[np.argmin(L1D) - 8]
         DO, CTo, g_LR = None, None, None
         gc.collect()
         return self.optim_lam

@@ -31,7 +31,7 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'cylinder'
+phantom = 'cylinder ramp'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -41,40 +41,27 @@ src_rad = 10
 angles = 500
 nTests = 500
 
+meth = ['RL', 'G8', 'B5', 'T']
+nm = len(meth)
 # %%
-data_obj = ddf.phantom(voxels, 'FORBILD', angles, noise, src_rad, det_rad,
-                       samp_fac=1)
+CS = np.zeros((nm, nTests, pix))
+CS2 = np.zeros((nm, nTests, pix))
+LS = np.zeros((nm, nTests, pix))
 
-## %% Create the circular cone beam CT class
-case = ddf.CCB_CT(data_obj)#
-## Initialize the algorithms (FDK, SIRT)
-case.init_algo()
-case.init_DDF_FDK()
-case.TFDK.do(lam='optim')
-x_FB = case.TFDK.results.var[-1] * case.filter_space.weighting.const
 
 # %%
-CS_T = np.zeros((nTests, pix))
-CS_FB = np.zeros((nTests, pix))
-CS_RL = np.zeros((nTests, pix))
-CS_G8 = np.zeros((nTests, pix))
-CS_B5 = np.zeros((nTests, pix))
-
-LS_T = np.zeros((nTests, pix))
-LS_FB = np.zeros((nTests, pix))
-LS_RL = np.zeros((nTests, pix))
-LS_G8 = np.zeros((nTests, pix))
-LS_B5 = np.zeros((nTests, pix))
-# %%
-def add_results(CS, LS, rec, it):
+def add_results(CS, CS2, LS, rec, it):
     mid = np.shape(rec)[0] // 2
+    tq = 3 * np.shape(rec)[0] // 4
     CS[it, :] = rec[:, mid, mid]
+    CS2[it, :] = rec[:, mid, tq]
     LS[it, :] = rec[mid, mid, :]
 
-def save_results(av_rec, CS, LS, path, meth):
-    np.save(f'{path}_rec_{meth}', av_rec)
-    np.save(f'{path}_CS_{meth}', CS)
-    np.save(f'{path}_LS_{meth}', LS)
+def save_results(av_rec, CS, CS2, LS, path, meth):
+    np.save(f'{path}rec_{meth}', av_rec)
+    np.save(f'{path}CS_{meth}', CS)
+    np.save(f'{path}CS2_{meth}', CS2)
+    np.save(f'{path}LS_{meth}', LS)
 
 
 # %%
@@ -96,36 +83,36 @@ for i in tqdm(range(nTests)):
         rec_B5 = case.FDK.filt_LP('Shepp-Logan', ['Bin', 5],
                                compute_results=False)
         rec_T = case.FDK_bin(x)
-        x_FB /= case.filter_space.weighting.const
-        rec_FB = case.FDK_bin(x_FB)
-        add_results(CS_RL, LS_RL, rec_RL, i)
-        add_results(CS_G8, LS_G8, rec_G8, i)
-        add_results(CS_B5, LS_B5, rec_B5, i)
-        add_results(CS_T, LS_T, rec_T, i)
-        add_results(CS_FB, LS_FB, rec_FB, i)
+#        x_FB /= case.filter_space.weighting.const
+#        rec_FB = case.FDK_bin(x_FB)
+        add_results(CS[0, :, :], CS2[0, :, :], LS[0, :, :], rec_RL, i)
+        add_results(CS[1, :, :], CS2[1, :, :], LS[1, :, :], rec_G8, i)
+        add_results(CS[2, :, :], CS2[2, :, :], LS[2, :, :], rec_B5, i)
+        add_results(CS[3, :, :], CS2[3, :, :], LS[3, :, :], rec_T, i)
+#        add_results(CS_FB, LS_FB, rec_FB, i)
 
     else:
         rec = case.FDK.do('Ram-Lak', compute_results=False)
-        add_results(CS_RL, LS_RL, rec, i)
+        add_results(CS[0, :, :], CS2[0, :, :], LS[0, :, :], rec_RL, i)
         rec_RL += rec
         
         rec = case.FDK.filt_LP('Shepp-Logan', ['Gauss', 8],
                                compute_results=False)
-        add_results(CS_G8, LS_G8, rec, i)
+        add_results(CS[1, :, :], CS2[1, :, :], LS[1, :, :], rec_G8, i)
         rec_G8 += rec
         
         rec = case.FDK.filt_LP('Shepp-Logan', ['Bin', 5],
                                compute_results=False)
-        add_results(CS_B5, LS_B5, rec, i)
+        add_results(CS[2, :, :], CS2[2, :, :], LS[2, :, :], rec_B5, i)
         rec_B5 += rec    
         
         rec = case.FDK_bin(x)
-        add_results(CS_T, LS_T, rec, i)
+        add_results(CS[3, :, :], CS2[3, :, :], LS[3, :, :], rec_T, i)
         rec_T += rec
         
-        rec = case.FDK_bin(x_FB)
-        add_results(CS_FB, LS_FB, rec, i)
-        rec_FB += rec
+#        rec = case.FDK_bin(x_FB)
+#        add_results(CS_FB, LS_FB, rec, i)
+#        rec_FB += rec
 
 
     gc.collect()
@@ -133,7 +120,7 @@ rec_RL /= nTests
 rec_G8 /= nTests
 rec_B5 /= nTests
 rec_T /= nTests
-rec_FB /= nTests
+#rec_FB /= nTests
     
 
 # %%
@@ -159,43 +146,56 @@ def plot_slice(GT, av_recs, sd_recs, meths, path=None):
 path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/'
 if not os.path.exists(path):
     os.makedirs(path)
-save_results(rec_RL, CS_RL, LS_RL, path, 'RL')
-save_results(rec_G8, CS_G8, LS_G8, path, 'G8')
-save_results(rec_B5, CS_B5, LS_B5, path, 'B5')
-save_results(rec_T, CS_T, LS_T, path, 'T')
-save_results(rec_FB, CS_FB, LS_FB, path, 'FB')
+save_results(rec_RL, CS[0, :, :], CS2[0, :, :], LS[0, :, :], path, 'RL')
+save_results(rec_RL, CS[1, :, :], CS2[1, :, :], LS[1, :, :], path, 'G8')
+save_results(rec_RL, CS[2, :, :], CS2[2, :, :], LS[2, :, :], path, 'B5')
+save_results(rec_RL, CS[3, :, :], CS2[3, :, :], LS[3, :, :], path, 'T')
+#save_results(rec_FB, CS_FB, LS_FB, path, 'FB')
 
 pylab.close('all')
-meths = ['RL', 'G8', 'B5', 'T', 'FB']
+meths = ['RL', 'G8', 'B5', 'T']
 # %%
 GT_CS = data_obj.f[:, pix // 2, pix // 2]
 av_recs_CS = [rec_RL[:, pix // 2, pix //2], rec_G8[:, pix // 2, pix //2],
-           rec_B5[:, pix // 2, pix //2], rec_T[:, pix // 2, pix //2],
-           rec_FB[:, pix // 2, pix //2]]
-sd_recs_CS = [compute_sd(CS_RL, rec_RL[:, pix // 2, pix //2]), 
-           compute_sd(CS_G8, rec_G8[:, pix // 2, pix //2]),
-           compute_sd(CS_B5, rec_B5[:, pix // 2, pix //2]),
-           compute_sd(CS_T, rec_T[:, pix // 2, pix //2]),
-           compute_sd(CS_FB, rec_FB[:, pix // 2, pix //2])]
+           rec_B5[:, pix // 2, pix //2], rec_T[:, pix // 2, pix //2]]#,
+#           rec_FB[:, pix // 2, pix //2]]
+sd_recs_CS = [compute_sd(CS[0, :, :], rec_RL[:, pix // 2, pix //2]), 
+           compute_sd(CS[1, :, :], rec_G8[:, pix // 2, pix //2]),
+           compute_sd(CS[2, :, :], rec_B5[:, pix // 2, pix //2]),
+           compute_sd(CS[3, :, :], rec_T[:, pix // 2, pix //2])]#,
+#           compute_sd(CS_FB, rec_FB[:, pix // 2, pix //2])]
 
 plot_slice(GT_CS, av_recs_CS, sd_recs_CS, meths)
 
 # %%
 GT_LS = data_obj.f[pix // 2, pix // 2, :]
 av_recs_LS = [rec_RL[pix // 2, pix //2, :], rec_G8[pix // 2, pix //2, :],
-           rec_B5[pix // 2, pix //2, :], rec_T[pix // 2, pix //2, :],
-           rec_FB[pix // 2, pix //2, :]]
-sd_recs_LS = [compute_sd(CS_RL, rec_RL[pix // 2, pix //2, :]), 
-           compute_sd(CS_G8, rec_G8[pix // 2, pix //2, :]),
-           compute_sd(CS_B5, rec_B5[pix // 2, pix //2, :]),
-           compute_sd(CS_T, rec_T[pix // 2, pix //2, :]),
-           compute_sd(CS_FB, rec_FB[pix // 2, pix //2, :])]
+           rec_B5[pix // 2, pix //2, :], rec_T[pix // 2, pix //2, :]]#,
+#           rec_FB[pix // 2, pix //2, :]]
+sd_recs_LS = [compute_sd(LS[0, :, :], rec_RL[pix // 2, pix //2, :]), 
+           compute_sd(LS[1, :, :], rec_G8[pix // 2, pix //2, :]),
+           compute_sd(LS[2, :, :], rec_B5[pix // 2, pix //2, :]),
+           compute_sd(LS[3, :, :], rec_T[pix // 2, pix //2, :])]#,
+#           compute_sd(CS_FB, rec_FB[pix // 2, pix //2, :])]
 
 plot_slice(GT_LS, av_recs_LS, sd_recs_LS, meths)
 
 # %%
+GT_CS2 = data_obj.f[:, pix // 2, 3 *pix // 4]
+av_recs_CS2 = [rec_RL[:, pix // 2,  3 *pix // 4], rec_G8[:, pix // 2, 3 *pix // 4],
+           rec_B5[:, pix // 2,  3 *pix // 4], rec_T[:, pix // 2,  3 *pix // 4]]#,
+#           rec_FB[:, pix // 2, pix //2]]
+sd_recs_CS2 = [compute_sd(CS2[0, :, :], rec_RL[:, pix // 2,  3 *pix // 4]), 
+           compute_sd(CS2[1, :, :], rec_G8[:, pix // 2,  3 *pix // 4]),
+           compute_sd(CS2[2, :, :], rec_B5[:, pix // 2,  3 *pix // 4]),
+           compute_sd(CS2[3, :, :], rec_T[:, pix // 2,  3 *pix // 4])]#,
+#           compute_sd(CS_FB, rec_FB[:, pix // 2, pix //2])]
 
+plot_slice(GT_CS2, av_recs_CS2, sd_recs_CS2, meths)
 
+#pylab.figure()
+#pylab.plot(GT_CS)
+#pylab.plot(rec_FB[:, pix // 2, pix // 2])
 # %%
 
     
