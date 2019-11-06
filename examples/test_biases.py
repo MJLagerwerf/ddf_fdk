@@ -31,7 +31,7 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'cylinder'
+phantom = 'cylinder ramp'
 if phantom == 'FORBILD':
     PH = 'FB'
 if phantom == 'cylinder ramp':
