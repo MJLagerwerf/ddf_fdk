@@ -38,6 +38,8 @@ if phantom == 'cylinder ramp':
     PH = 'CR'    
 if phantom == 'cylinder':
     PH = 'CC'
+if phantom == 'Cluttered sphere':
+    PH = 'CS'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -45,7 +47,7 @@ noise = ['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 500
-nTests = 100
+nTests = 500
 
 meth = ['RL', 'G8', 'B5', 'T']
 nm = len(meth)
