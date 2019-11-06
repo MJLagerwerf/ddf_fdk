@@ -45,7 +45,7 @@ noise = ['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 500
-nTests = 500
+nTests = 2
 
 meth = ['RL', 'G8', 'B5', 'T']
 nm = len(meth)
@@ -99,21 +99,21 @@ for i in tqdm(range(nTests)):
 
     else:
         rec = case.FDK.do('Ram-Lak', compute_results=False)
-        add_results(CS[0, :, :], CS2[0, :, :], LS[0, :, :], rec_RL, i)
+        add_results(CS[0, :, :], CS2[0, :, :], LS[0, :, :], rec, i)
         rec_RL += rec
         
         rec = case.FDK.filt_LP('Shepp-Logan', ['Gauss', 8],
                                compute_results=False)
-        add_results(CS[1, :, :], CS2[1, :, :], LS[1, :, :], rec_G8, i)
+        add_results(CS[1, :, :], CS2[1, :, :], LS[1, :, :], rec, i)
         rec_G8 += rec
         
         rec = case.FDK.filt_LP('Shepp-Logan', ['Bin', 5],
                                compute_results=False)
-        add_results(CS[2, :, :], CS2[2, :, :], LS[2, :, :], rec_B5, i)
+        add_results(CS[2, :, :], CS2[2, :, :], LS[2, :, :], rec, i)
         rec_B5 += rec    
         
         rec = case.FDK_bin(x)
-        add_results(CS[3, :, :], CS2[3, :, :], LS[3, :, :], rec_T, i)
+        add_results(CS[3, :, :], CS2[3, :, :], LS[3, :, :], rec, i)
         rec_T += rec
         
 #        rec = case.FDK_bin(x_FB)
@@ -153,9 +153,9 @@ path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/
 if not os.path.exists(path):
     os.makedirs(path)
 save_results(rec_RL, CS[0, :, :], CS2[0, :, :], LS[0, :, :], f'{path}{PH}', 'RL')
-save_results(rec_RL, CS[1, :, :], CS2[1, :, :], LS[1, :, :], f'{path}{PH}', 'G8')
-save_results(rec_RL, CS[2, :, :], CS2[2, :, :], LS[2, :, :], f'{path}{PH}', 'B5')
-save_results(rec_RL, CS[3, :, :], CS2[3, :, :], LS[3, :, :], f'{path}{PH}', 'T')
+save_results(rec_G8, CS[1, :, :], CS2[1, :, :], LS[1, :, :], f'{path}{PH}', 'G8')
+save_results(rec_B5, CS[2, :, :], CS2[2, :, :], LS[2, :, :], f'{path}{PH}', 'B5')
+save_results(rec_T, CS[3, :, :], CS2[3, :, :], LS[3, :, :], f'{path}{PH}', 'T')
 #save_results(rec_FB, CS_FB, LS_FB, path, 'FB')
 
 pylab.close('all')
@@ -204,4 +204,11 @@ plot_slice(GT_CS2, av_recs_CS2, sd_recs_CS2, meths)
 #pylab.plot(rec_FB[:, pix // 2, pix // 2])
 # %%
 
-    
+pylab.figure()
+pylab.imshow(rec_RL[:, :, pix // 2])
+pylab.figure()
+pylab.imshow(rec_G8[:, :, pix // 2])
+pylab.figure()
+pylab.imshow(rec_B5[:, :, pix // 2])
+pylab.figure()
+pylab.imshow(rec_T[:, :, pix // 2])
