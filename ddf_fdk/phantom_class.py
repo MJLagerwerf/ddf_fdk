@@ -157,6 +157,9 @@ class phantom:
         Iclean = (I_0 * np.exp(-data))
         data = None
         Inoise = np.random.poisson(Iclean)
+        if np.any(Inoise == 0):
+            print('There was a 0 pixel')
+            Inoise[Inoise == 0] = 1
         Iclean = None
         np.random.set_state(seed_old)
         return  (-np.log(Inoise / I_0))
