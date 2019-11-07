@@ -16,6 +16,14 @@ import os
 import time
 ddf.import_astra_GPU()
 
+def get_axis(rec):
+    mid = np.shape(rec)[0] // 2
+    xy = rec[mid, :, :]
+    xz = rec[:, mid, :]
+    yz = rec[:, :, mid]
+    return [[xy], [xz], [yz]]
+    
+
 ex = Experiment()
 # %%
 @ex.config
@@ -23,7 +31,7 @@ def cfg():
     it_i = 0
     pix = 1024
     # Specific phantom
-    phantom = 'FORBILD'
+    phantom = 'Foam'
     # Number of angles
     angles = 360
     I0 = [2 ** 8, 2 ** 9, 2 ** 10, 2 ** 11, 2 ** 12, 2 ** 13, 2 ** 14, 2 ** 16,
@@ -80,16 +88,6 @@ def save_and_add_artifact(path, arr):
     ex.add_artifact(path)
 
 @ex.capture
-def save_network(case, full_path, NW_path):
-    NW_full = h5py.File(full_path + NW_path, 'r')
-    NW = h5py.File(case.WV_path + NW_path, 'w')
-
-    NW_full.copy(str(case.NNFDK.network[-1]['nNW']), NW, name='NW')
-    NW_full.close()
-    NW.close()
-    ex.add_artifact(case.WV_path + NW_path)
-    
-@ex.capture
 def save_table(case, WV_path):
     case.table()
     latex_table = open(WV_path + '_latex_table.txt', 'w')
@@ -115,47 +113,52 @@ def main(specifics):
     case = CT()
     t3 = time.time()
     print(t3 - t2, 'seconds to initialize CT object')
-    Q = np.zeros((0, 3))
-    RT = np.zeros((0))
+#    Q = np.zeros((0, 3))
+#    RT = np.zeros((0))
 
     save_and_add_artifact(f'{case.WV_path}_g.npy', case.g)
 
     f = 'Shepp-Logan'
     LP_filts = [['Gauss', 8], ['Gauss', 5], ['Bin', 2], ['Bin', 5]]
     
-    case.FDK.do(f)
+    rec = case.FDK.do(f, compute_results=False)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec_full.npy', rec)
     save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec.npy',
-                          case.FDK.results.rec_axis[-1])
+                          get_axis(rec))
 
 
-    
     for lp in LP_filts:
-        case.FDK.filt_LP(f, lp)
+        rec = case.FDK.filt_LP(f, lp, compute_results=False)
         if lp[0] == 'Gauss':
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
                                   f'_FDKSL_GS{lp[1]}_rec.npy',
-                                  case.FDK.results.rec_axis[-1])
+                                  get_axis(rec))
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_GS{lp[1]}_rec_full.npy',
+                                  rec)
         elif lp[0] == 'Bin':
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
                                   f'_FDKSL_BN{lp[1]}_rec.npy',
-                                  case.FDK.results.rec_axis[-1])
-    Q, RT = log_variables(case.FDK.results, Q, RT)
+                                  get_axis(rec))
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_BN{lp[1]}_rec_full.npy',
+                                  rec)
+
     print('Finished FDKs')
     
     
-    case.TFDK.do(lam='optim')
+    rec = case.TFDK.do(lam='optim', compute_results=False)
     save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec.npy',
-                          case.TFDK.results.rec_axis[-1])
-    Q, RT = log_variables(case.TFDK.results, Q, RT)
+                          get_axis(rec))
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec_full.npy',
+                          rec)
+#    Q, RT = log_variables(case.TFDK.results, Q, RT)
     
     
     save_and_add_artifact(f'{case.WV_path}{specifics}_AtA.npy', case.AtA)
     save_and_add_artifact(f'{case.WV_path}{specifics}_Atg.npy', case.Atg)
     save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy',
                           case.DDC_norm)
-
-    save_and_add_artifact(f'{case.WV_path}{specifics}_Q.npy', Q)
-    save_and_add_artifact(f'{case.WV_path}{specifics}_RT.npy', RT)
 
     print('Finished MR-FDK')
 
