@@ -23,7 +23,6 @@ t = time.time()
 
 
 
-
 # %% Set variables
 # The size of the measured objects in voxels
 pix = 256
@@ -40,6 +39,7 @@ if phantom == 'cylinder':
     PH = 'CC'
 if phantom == 'Cluttered sphere':
     PH = 'CS'
+PH += '2'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -47,7 +47,7 @@ noise = ['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 500
-nTests = 500
+nTests = 250
 
 meth = ['RL', 'G8', 'B5', 'T']
 nm = len(meth)
