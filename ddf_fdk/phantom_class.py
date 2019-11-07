@@ -522,10 +522,16 @@ class phantom:
                                             shape=voxels, dtype='float32')
             
             # ! ! ! TODO: fix a way to get this path to work automatically ! ! !
-            path = '/export/scratch2/lagerwer/AFFDK_results/cone_foam/' + \
+            path_loc = '/export/scratch2/lagerwer/AFFDK_results/cone_foam/' + \
                     'cone_foam_spec.txt'
+            path_serv = '/bigstore/lagerwer/data/cone_foam/cone_foam_spec.txt'
+            try:
+                ball_spec = np.loadtxt(path_loc, dtype='float64')
+            except:
+                ball_spec = np.loadtxt(path_serv, dtype='float64')
 
-            ball_spec = np.loadtxt(path, dtype='float64')
+
+#            ball_spec = np.loadtxt(path, dtype='float64')
             ball_pos = ball_spec[:, :3]
             ball_radius = ball_spec[:, 3]
             
