@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  5 13:14:05 2019
+Created on Wed Oct 10 13:57:32 2018
 
 @author: lagerwer
 """
@@ -14,7 +14,15 @@ import gc
 import pylab
 import os
 import time
+ddf.import_astra_GPU()
 
+def get_axis(rec):
+    mid = np.shape(rec)[0] // 2
+    xy = rec[mid, :, :]
+    xz = rec[:, mid, :]
+    yz = rec[:, :, mid]
+    return [[xy], [xz], [yz]]
+    
 
 ex = Experiment()
 # %%
@@ -26,7 +34,8 @@ def cfg():
     phantom = 'Foam'
     # Number of angles
     angles = 360
-    I0 = [2 ** 8, 2 ** 9, 2 ** 10, 2 ** 11, 2 ** 12, 2 ** 13, 2 ** 14]
+    I0 = [2 ** 8, 2 ** 9, 2 ** 10, 2 ** 11, 2 ** 12, 2 ** 13, 2 ** 14, 2 ** 16,
+          2 ** 18, 2 ** 20]
     noise = ['Poisson', I0[it_i]]
 
     # Source radius
@@ -35,17 +44,13 @@ def cfg():
     lp = '/export/scratch2/lagerwer/NNFDK/phantoms/'
     f_load_path = None
     g_load_path = None
-    
-    nTest = 25
-    window = [0.2, 0.6]
-    
-    bin_size = 5
-    number_bins = 10
+
+
 
     # Specifics for the expansion operator
     Exp_bin = 'linear'
     bin_param = 2
-    specifics = 'Task_I0' + str(I0[it_i])
+    specifics = 'I0' + str(I0[it_i])
     
 
 # %%
@@ -77,8 +82,30 @@ def CT(pix, phantom, angles, src_rad, noise, Exp_bin, bin_param, f_load_path,
     return CT_obj
 
 # %%
+@ex.capture
+def save_and_add_artifact(path, arr):
+    np.save(path, arr)
+    ex.add_artifact(path)
+
+@ex.capture
+def save_table(case, WV_path):
+    case.table()
+    latex_table = open(WV_path + '_latex_table.txt', 'w')
+    latex_table.write(case.table_latex)
+    latex_table.close()
+    ex.add_artifact(WV_path + '_latex_table.txt')
+
+@ex.capture
+def log_variables(results, Q, RT):
+    Q = np.append(Q, results.Q, axis=0)
+    RT = np.append(RT, results.rec_time)
+    return Q, RT
+    
+
+
+# %%
 @ex.automain
-def main(specifics, nTest, window, bin_size, number_bins):
+def main(specifics):
     if not os.path.exists('AFFDK_results'):
         os.makedirs('AFFDK_results')
     t2 = time.time()
@@ -86,109 +113,57 @@ def main(specifics, nTest, window, bin_size, number_bins):
     case = CT()
     t3 = time.time()
     print(t3 - t2, 'seconds to initialize CT object')
+#    Q = np.zeros((0, 3))
+#    RT = np.zeros((0))
 
-    seg_err = np.zeros((11))
-    seg_err_list = np.zeros((11, nTest))
-    pore_dist = np.zeros((12, number_bins))
-    
-    np.save(case.WV_path + specifics + '_g.npy', case.g)
-    ex.add_artifact(case.WV_path + specifics + '_g.npy')
-    
-    # Create the ground truth segementation
-    seg_GT = (np.asarray(case.phantom.f) > 0.239)
-    np.save(case.WV_path + specifics + '_GT_seg_full.npy', (seg_GT))
-    ex.add_artifact(case.WV_path + specifics + '_GT_seg_full.npy')
-    np.save(case.WV_path + specifics + '_GT_seg.npy', ddf.get_axis(seg_GT))
-    ex.add_artifact(case.WV_path + specifics + '_GT_seg.npy')
-    pore_dist[0, :] = ddf.pore_size_distr(seg_GT, bin_size, number_bins)
-    
-    
-    
-    
+    save_and_add_artifact(f'{case.WV_path}_g.npy', case.g)
+
     f = 'Shepp-Logan'
     LP_filts = [['Gauss', 8], ['Gauss', 5], ['Bin', 2], ['Bin', 5]]
     
-    rec = case.FDK.do(f, compute_results='no')
-    seg_err_list[0, :], seg_err[0], seg = ddf.comp_global_seg(rec, seg_GT,
-                nTest, window)
-    pore_dist[1, :] = ddf.pore_size_distr(seg, bin_size, number_bins)
-    np.save(case.WV_path + specifics + '_FDKSL_seg_full.npy', (seg))
-    ex.add_artifact(case.WV_path + specifics + '_FDKSL_seg_full.npy')
-    np.save(case.WV_path + specifics + '_FDKSL_seg.npy', ddf.get_axis(seg))
-    ex.add_artifact(case.WV_path + specifics + '_FDKSL_seg.npy')
+    rec = case.FDK.do(f, compute_results=False)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec_full.npy', rec)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec.npy',
+                          get_axis(rec))
 
 
-        
-    tel = 1
     for lp in LP_filts:
-        rec = case.FDK.filt_LP(f, lp, compute_results='no')
-        seg_err_list[tel, :], seg_err[tel], seg = ddf.comp_global_seg(rec,seg_GT,
-                    nTest, window)
-        pore_dist[tel + 1, :] = ddf.pore_size_distr(seg, bin_size, number_bins)
+        rec = case.FDK.filt_LP(f, lp, compute_results=False)
         if lp[0] == 'Gauss':
-            np.save(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1]) + 
-                    '_seg_full.npy', (seg))
-            ex.add_artifact(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1])
-                            + '_seg_full.npy')
-            np.save(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1]) + 
-                    '_seg.npy', ddf.get_axis(seg))
-            ex.add_artifact(case.WV_path + specifics + '_FDKSL_GS' + str(lp[1])
-                            + '_seg.npy')
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_GS{lp[1]}_rec.npy',
+                                  get_axis(rec))
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_GS{lp[1]}_rec_full.npy',
+                                  rec)
         elif lp[0] == 'Bin':
-            np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
-                    '_seg_full.npy', (seg))
-            ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
-                            + '_seg_full.npy')
-            np.save(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1]) + 
-                    '_seg.npy', ddf.get_axis(seg))
-            ex.add_artifact(case.WV_path + specifics + '_FDKSL_BN' + str(lp[1])
-                            + '_seg.npy')
-        tel += 1
-
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_BN{lp[1]}_rec.npy',
+                                  get_axis(rec))
+            save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
+                                  f'_FDKSL_BN{lp[1]}_rec_full.npy',
+                                  rec)
 
     print('Finished FDKs')
     
-
+    
+    rec = case.TFDK.do(lam='optim', compute_results=False)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec.npy',
+                          get_axis(rec))
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec_full.npy',
+                          rec)
+#    Q, RT = log_variables(case.TFDK.results, Q, RT)
     
     
-    rec = case.TFDK.do(lam='optim', compute_results='no')
-    seg_err_list[6, :], seg_err[6], seg = ddf.comp_global_seg(rec, seg_GT,
-                nTest, window)
-    pore_dist[7, :] = ddf.pore_size_distr(seg, bin_size, number_bins)
-    np.save(case.WV_path + specifics + '_TFDK_seg_full.npy', (seg))
-    ex.add_artifact(case.WV_path + specifics + '_TFDK_seg_full.npy')
-    np.save(case.WV_path + specifics + '_TFDK_seg.npy', ddf.get_axis(seg))
-    ex.add_artifact(case.WV_path + specifics + '_TFDK_seg.npy')
+    save_and_add_artifact(f'{case.WV_path}{specifics}_AtA.npy', case.AtA)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_Atg.npy', case.Atg)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy',
+                          case.DDC_norm)
 
-    
+    print('Finished MR-FDK')
 
+    save_table(case, f'{case.WV_path}{specifics}')
 
-    np.save(case.WV_path + specifics + '_AtA.npy', case.AtA)
-    ex.add_artifact(case.WV_path + specifics + '_AtA.npy')
-    np.save(case.WV_path + specifics + '_Atg.npy', case.Atg)
-    ex.add_artifact(case.WV_path + specifics + '_Atg.npy')
-    np.save(case.WV_path + specifics + '_DDC_norm.npy', case.DDC_norm)
-    ex.add_artifact(case.WV_path + specifics + '_DDC_norm.npy')
-
-
-    print('Finished AF-FDK')
-
-
-
-
-    case.table()
-    latex_table = open(case.WV_path + specifics + '_latex_table.txt', 'w')
-    latex_table.write(case.table_latex)
-    latex_table.close()
-    ex.add_artifact(case.WV_path + specifics + '_latex_table.txt')
-
-    np.save(case.WV_path + specifics + '_seg_err.npy', seg_err)
-    ex.add_artifact(case.WV_path + specifics + '_seg_err.npy')
-    np.save(case.WV_path + specifics + '_seg_err_list.npy', seg_err_list)
-    ex.add_artifact(case.WV_path + specifics + '_seg_err_list.npy')
-
-    np.save(case.WV_path + specifics + '_pore_dist.npy', pore_dist)
-    ex.add_artifact(case.WV_path + specifics + '_pore_dist.npy')
     case = None
     gc.collect()
-    return pore_dist
+    return Q

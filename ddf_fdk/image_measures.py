@@ -25,6 +25,10 @@ def porosity(im):
     e = Vp/(Vs + Vp)
     return e
 
+def comp_seg_otsu(rec):
+    val = threshold_otsu(np.asarray(rec))
+    return (rec > val)
+
 def comp_rSegErr(S, S_GT):
     err = np.linalg.norm(np.ravel(S) * 1 - np.ravel(S_GT) * 1, 1) / np.size(S)
     return err
@@ -39,11 +43,13 @@ def comp_porosity(X):
     fig = np.invert(fig) * 2 + np.invert(np.asarray(X) * 1)
     return porosity(fig)
     
-def pore_size_distr(seg, mask, bin_size, number_bins=10, show_particles=False):
+def pore_size_distr(seg, bin_size, number_bins=10, show_particles=False):
     part_count = np.zeros((number_bins))
     mid = np.size(seg, 0) // 2
     label_array = np.zeros((np.shape(seg)))
-    a = np.invert(np.asarray(seg)) * mask
+    a = np.invert(np.asarray(seg))
+    a = sp.binary_dilation(np.asarray(a), iterations=3)
+    a = sp.binary_erosion(np.asarray(a), iterations=3)
     for i in range(number_bins):
         label_array, part_count[i] = ndimage.measurements.label(a)
         
@@ -72,6 +78,13 @@ def part_count_to_distr(part_count, bin_size, number_bins):
     else:
         pore_dist[-1] = part_count[-1]
     return pore_dist
+
+
+def do_seg_and_pore_dist(rec, bin_size, num_bins):
+    seg = comp_seg_otsu(rec)
+    part_count = pore_size_distr(seg, bin_size, num_bins)
+    pore_dist = part_count_to_distr(part_count, bin_size, num_bins)
+    return seg, part_count, pore_dist
 # %%    
 # ! ! ! TODO: Add gaussian weights for SSIM
 def comp_ssim(X, Y, C1, C2, filt_size):
