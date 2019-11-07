@@ -45,8 +45,7 @@ def cfg():
     f_load_path = None
     g_load_path = None
 
-    num_bins = 10
-    bin_size = 5
+
 
     # Specifics for the expansion operator
     Exp_bin = 'linear'
@@ -102,15 +101,11 @@ def log_variables(results, Q, RT):
     RT = np.append(RT, results.rec_time)
     return Q, RT
     
-@ex.capture
-def log_gen_variables(results, arr):
-    arr = np.append(arr, [results,], axis=0)
-    return arr
-    
+
 
 # %%
 @ex.automain
-def main(specifics, bin_size, num_bins):
+def main(specifics):
     if not os.path.exists('AFFDK_results'):
         os.makedirs('AFFDK_results')
     t2 = time.time()
@@ -118,64 +113,48 @@ def main(specifics, bin_size, num_bins):
     case = CT()
     t3 = time.time()
     print(t3 - t2, 'seconds to initialize CT object')
+#    Q = np.zeros((0, 3))
+#    RT = np.zeros((0))
 
-    part_count_list = np.zeros((0, num_bins))
-    pore_dist_list = np.zeros((0, num_bins))
     save_and_add_artifact(f'{case.WV_path}_g.npy', case.g)
 
     f = 'Shepp-Logan'
     LP_filts = [['Gauss', 8], ['Gauss', 5], ['Bin', 2], ['Bin', 5]]
     
     rec = case.FDK.do(f, compute_results=False)
-    seg, part_count, pore_dist = ddf.do_seg_and_pore_dist(rec, bin_size,
-                                                          num_bins)
-    print(np.shape(part_count))
-    print(np.shape(pore_dist))
-    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_seg_full.npy', seg)
-    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_seg.npy',
-                          get_axis(seg))
-    log_gen_variables(part_count, part_count_list)
-    log_gen_variables(pore_dist, pore_dist_list)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec_full.npy', rec)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_rec.npy',
+                          get_axis(rec))
+
 
     for lp in LP_filts:
         rec = case.FDK.filt_LP(f, lp, compute_results=False)
-        seg, part_count, pore_dist = ddf.do_seg_and_pore_dist(rec, bin_size,
-                                                          num_bins)
-        log_gen_variables(part_count, part_count_list)
-        log_gen_variables(pore_dist, pore_dist_list)
-
         if lp[0] == 'Gauss':
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
-                                  f'_FDKSL_GS{lp[1]}_seg.npy',
-                                  get_axis(seg))
+                                  f'_FDKSL_GS{lp[1]}_rec.npy',
+                                  get_axis(rec))
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
-                                  f'_FDKSL_GS{lp[1]}_seg_full.npy',
-                                  seg)
+                                  f'_FDKSL_GS{lp[1]}_rec_full.npy',
+                                  rec)
         elif lp[0] == 'Bin':
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
-                                  f'_FDKSL_BN{lp[1]}_seg.npy',
-                                  get_axis(seg))
+                                  f'_FDKSL_BN{lp[1]}_rec.npy',
+                                  get_axis(rec))
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
-                                  f'_FDKSL_BN{lp[1]}_seg_full.npy',
-                                  seg)
+                                  f'_FDKSL_BN{lp[1]}_rec_full.npy',
+                                  rec)
 
     print('Finished FDKs')
     
     
     rec = case.TFDK.do(lam='optim', compute_results=False)
-    seg, part_count, pore_dist = ddf.do_seg_and_pore_dist(rec, bin_size,
-                                                  num_bins)
-    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_seg.npy',
-                          get_axis(seg))
-    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_seg_full.npy',
-                          seg)
-
-    log_gen_variables(part_count, part_count_list)
-    log_gen_variables(pore_dist, pore_dist_list)
-    save_and_add_artifact(f'{case.WV_path}{specifics}_part_count.npy',
-                          part_count_list)
-    save_and_add_artifact(f'{case.WV_path}{specifics}_pore_dist.npy',
-                          pore_dist_list)
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec.npy',
+                          get_axis(rec))
+    save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_rec_full.npy',
+                          rec)
+#    Q, RT = log_variables(case.TFDK.results, Q, RT)
+    
+    
     save_and_add_artifact(f'{case.WV_path}{specifics}_AtA.npy', case.AtA)
     save_and_add_artifact(f'{case.WV_path}{specifics}_Atg.npy', case.Atg)
     save_and_add_artifact(f'{case.WV_path}{specifics}_DDC_norm.npy',
@@ -187,4 +166,4 @@ def main(specifics, bin_size, num_bins):
 
     case = None
     gc.collect()
-    return pore_dist
+    return Q
