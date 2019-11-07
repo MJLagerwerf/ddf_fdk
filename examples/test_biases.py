@@ -39,7 +39,7 @@ if phantom == 'cylinder':
     PH = 'CC'
 if phantom == 'Cluttered sphere':
     PH = 'CS'
-PH += '2'
+PH += ''
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
