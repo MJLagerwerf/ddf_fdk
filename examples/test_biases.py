@@ -34,7 +34,7 @@ phantom = 'cylinder'
 if phantom == 'FORBILD':
     PH = 'FB'
 if phantom == 'cylinder ramp':
-    PH = 'CR'    AFFDK_results/sim_pore_dist
+    PH = 'CR'
 if phantom == 'cylinder':
     PH = 'CC'
 if phantom == 'Cluttered sphere':
@@ -151,7 +151,7 @@ def plot_slice(GT, av_recs, sd_recs, meths, path=None):
     pylab.legend()
 
 # %%  
-path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias/I0{noise[1]}/'
+path = f'/export/scratch2/lagerwer/AFFDK_results/resubmission/bias_test/I0{noise[1]}/'
 if not os.path.exists(path):
     os.makedirs(path)
 save_results(rec_RL, CS[0, :, :], CS2[0, :, :], LS[0, :, :], f'{path}{PH}', 'RL')
