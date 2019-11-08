@@ -386,7 +386,7 @@ def load_part_counts(path, nMeth, nExp, files, spec, spec_var, bin_size,
         i = 0
         for f in files:
             Q[:, :, i] = np.load(path + str(f) + '/' + spec + str(spec_var[i]) 
-                        + 'part_count.npy')
+                        + '_part_count.npy')
             i += 1
         for i1 in range(nMeth):
             for i2 in range(nExp):

@@ -134,15 +134,15 @@ def main(specifics, bin_size, num_bins):
     save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_seg_full.npy', seg)
     save_and_add_artifact(f'{case.WV_path}{specifics}_FDKSL_seg.npy',
                           get_axis(seg))
-    log_gen_variables(part_count, part_count_list)
-    log_gen_variables(pore_dist, pore_dist_list)
+    part_count_list = log_gen_variables(part_count, part_count_list)
+    pore_dist_list = log_gen_variables(pore_dist, pore_dist_list)
 
     for lp in LP_filts:
         rec = case.FDK.filt_LP(f, lp, compute_results=False)
         seg, part_count, pore_dist = ddf.do_seg_and_pore_dist(rec, bin_size,
                                                           num_bins)
-        log_gen_variables(part_count, part_count_list)
-        log_gen_variables(pore_dist, pore_dist_list)
+        part_count_list = log_gen_variables(part_count, part_count_list)
+        pore_dist_list = log_gen_variables(pore_dist, pore_dist_list)
         seg_err = np.append(seg_err, ddf.comp_rSegErr(seg, seg_GT))
         if lp[0] == 'Gauss':
             save_and_add_artifact(f'{case.WV_path}{specifics}'+ \
@@ -170,8 +170,8 @@ def main(specifics, bin_size, num_bins):
     save_and_add_artifact(f'{case.WV_path}{specifics}_TFDK_seg_full.npy',
                           seg)
 
-    log_gen_variables(part_count, part_count_list)
-    log_gen_variables(pore_dist, pore_dist_list)
+    part_count_list = log_gen_variables(part_count, part_count_list)
+    pore_dist_list = log_gen_variables(pore_dist, pore_dist_list)
     seg_err = np.append(seg_err, ddf.comp_rSegErr(seg, seg_GT))
     save_and_add_artifact(f'{case.WV_path}{specifics}_part_count.npy',
                           part_count_list)

@@ -79,6 +79,10 @@ def part_count_to_distr(part_count, bin_size, number_bins):
         pore_dist[-1] = part_count[-1]
     return pore_dist
 
+def do_pore_dist(seg, bin_size, number_bins):
+    pc = pore_size_distr(seg, bin_size, number_bins)
+    return pc, part_count_to_distr(pc, bin_size, number_bins)
+    
 
 def do_seg_and_pore_dist(rec, bin_size, num_bins):
     seg = comp_seg_otsu(rec)
