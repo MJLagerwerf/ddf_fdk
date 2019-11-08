@@ -25,7 +25,7 @@ t = time.time()
 
 # %% Set variables
 # The size of the measured objects in voxels
-pix = 256
+pix = 1024
 voxels = [pix, pix, pix]
 
 # Pick your phantom
@@ -47,7 +47,7 @@ noise = ['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 500
-nTests = 250
+nTests = 1
 
 meth = ['RL', 'G8', 'B5', 'T']
 nm = len(meth)

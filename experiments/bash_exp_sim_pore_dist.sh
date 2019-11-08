@@ -6,7 +6,7 @@
 
 
 
-for i in {0..6}
+for i in {7..9}
 do
     python exp_sim_pore_dist.py -p -F \
     AFFDK_results/sim_pore_dist with it_i=$i
