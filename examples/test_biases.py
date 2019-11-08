@@ -47,7 +47,7 @@ noise = ['Poisson', 2 ** 8]
 det_rad = 0
 src_rad = 10
 angles = 500
-nTests = 1
+nTests = 100
 
 meth = ['RL', 'G8', 'B5', 'T']
 nm = len(meth)
