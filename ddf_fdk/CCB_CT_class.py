@@ -348,4 +348,4 @@ class CCB_CT:
                 fig.suptitle('Gold standard', fontsize=fontsize+2)
         fig.show()
         if save_name is not None:
-            pylab.savefig(save_name+extension, bbox_inches='tight')
+            pylab.savefig(save_name + extension, bbox_inches='tight')

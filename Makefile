@@ -90,7 +90,6 @@ install: clean ## install the package to the active Python's site-packages
 install_dev:
 	# https://stackoverflow.com/a/28842733
 	conda install -c astra-toolbox/label/dev astra-toolbox -y
-	conda install -c astra-toolbox/label/dev cudatoolkit=9.0 -y
 	pip install git+https://github.com/odlgroup/odl.git@0a2dac2a68be3a06e72b4559f9026c206ccad46e#egg=odl
 	conda install Cython -y
 	pip install -e .[dev]
