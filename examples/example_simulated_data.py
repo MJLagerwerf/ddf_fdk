@@ -25,7 +25,7 @@ voxels = [pix, pix, pix]
 
 # Pick your phantom
 # Options: 'Shepp-Logan', 'Defrise', 'Derenzo', 'Hollow cube', 'Cube', 'Var obj'
-phantom = 'Foam'
+phantom = 'Fourshape'
 #lp = '/export/scratch2/lagerwer/NNFDK_results/nTrain_optim_1024_lim_ang/'
 #f_load_path = lp + 'CS_f.npy'
 #g_load_path = lp + 'CS_A64_g.npy'
@@ -34,13 +34,13 @@ det_rad = 0
 src_rad = 10
 angles = 2
 
-data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad,
-                       samp_fac=1)
-
-
-### %% Create the circular cone beam CT class
-case = ddf.CCB_CT(data_obj)#
-case.show_phantom()
+for i in range(10):
+    data_obj = ddf.phantom(voxels, phantom, angles, noise, src_rad, det_rad)
+    
+    
+    ### %% Create the circular cone beam CT class
+    case = ddf.CCB_CT(data_obj)#
+    case.show_phantom()
 ### Initialize the algorithms (FDK, SIRT)
 #case.init_algo()
 #case.init_DDF_FDK()
