@@ -86,7 +86,7 @@ class algorithm_class:
         else:
             self.results = results(self, rec, measures, var, param, t_rec)
 
-    def show(self, rec_it=-1, clim=None, save_name=None, extension='.eps',
+    def show(self, rec_it=-1, clim=None, save_name=None, extension='.pdf',
              fontsize=20):
         space = self.CT_obj.reco_space
         if clim == None:
