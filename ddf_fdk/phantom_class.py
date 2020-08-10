@@ -219,7 +219,7 @@ class phantom:
                              ''.format(self.noise[0]))
 # %%                
     def generate_HQdata(self, voxels_up, reco_space_up, f_up, **kwargs):
-        angles = 1500
+        angles = 1000
         src_rad = 100
         det_rad = 0
         factor = 2
